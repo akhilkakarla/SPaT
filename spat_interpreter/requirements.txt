@@ -1,0 +1,7 @@
+# gui
+tk==0.1.0
+
+# j2735 decoder
+pycrate==0.7.8
+json2xml==4.1.0
+xmltodict==0.14.2
