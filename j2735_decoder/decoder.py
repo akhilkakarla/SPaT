@@ -1,5 +1,3 @@
-#!/home/programmedbean/files/nmc_projects/rsu_reserach/akhil_project/j2735_decoder/.j2735_decode/bin/python3
-
 import sys
 from CAVmessages import J2735_decode
 

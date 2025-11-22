@@ -75,21 +75,6 @@ class CV2X_Message:
 			return decode.xml
 		except:
 			return None
-		
-	def writePhase(self, phase):
-		# fout.writelines(["Phase ", str(phase), ': '])
-		print("Phase ", str(phase), ': ')
-
-	def writeState(self, state):
-		# fout.writelines([str(state),  "\n"])
-		print(str(state),  "\n")
-
-	def writeTime(self, endTime, currentSec, currentDecSec):
-		global countdown
-		currentTime = currentSec + currentDecSec / 10.0
-		countdown = round(endTime - currentTime, 2)
-		# fout.writelines(["Time to next state: {:.1f}.format(countdown)])
-		print("Time to next state: {:.1f}".format(countdown))
 
 	def interpret_spat(self):
 		data = self.uper_data

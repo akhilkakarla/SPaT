@@ -5,3 +5,4 @@ spat_interpreter/__pycache__/
 #environments
 j2735_decoder/.j2735_decode/
 spat_interpreter/.spat_vis/
+data/.pcap_parser/
