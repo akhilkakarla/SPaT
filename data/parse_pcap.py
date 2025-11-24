@@ -28,3 +28,4 @@ def extract_pcap_payload(pcap_file, txt_file):
 PCAP_DATA_FILE = "burnet_2025_09_11_14_01_01_cv2x0_rx.pcap"
 TXT_DATA_FILE = "burnet_2025_09_11_14_01_01_cv2x0_rx.txt"
 extracted_payloads = extract_pcap_payload(PCAP_DATA_FILE, TXT_DATA_FILE)
+

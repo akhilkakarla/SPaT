@@ -12,6 +12,7 @@ from CV2X_Message import CV2X_Message
 from CAVmessages import J2735_decode
 import J2735_201603_combined_mobility
 import binascii
+from decoder import decoder
 
 # Creating Tk window
 root = Tk()
@@ -93,7 +94,9 @@ def update_traffic_light():
 			elif(cv2x_msg.uper_data[0:4] == '0013'):
 				
 				## Decode the SPaT message
-				spat_msg_decoded = None
+				payload = "00134a4593d100801b3b5200001f207001046401310131001021a00e740fdc00c10d005320532008086803020343005043401ce812d803023200988098801c10d0053205320100868030203430"
+				spat_msg_decoded = decoder(payload)
+    
 				try:
 					spat_msg_decoded = cv2x_msg.interpret_spat()
 				except Exception as e:
