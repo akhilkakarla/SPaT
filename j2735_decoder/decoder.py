@@ -18,3 +18,6 @@ if __name__ == "__main__":
             print("ERROR: No payload provided.")
         else:
             print("ERROR: More than one payload provided.")
+
+payload = "00134a4593d100801b3b5200001f207001046401310131001021a00e740fdc00c10d005320532008086803020343005043401ce812d803023200988098801c10d0053205320100868030203430"
+decoded_payload = decoder(payload)
