@@ -12,7 +12,7 @@ from CV2X_Message import CV2X_Message
 from CAVmessages import J2735_decode
 import J2735_201603_combined_mobility
 import binascii
-import decoder
+from decoder import decoder
 
 # Creating Tk window
 root = Tk()
