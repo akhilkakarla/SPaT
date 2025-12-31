@@ -16,8 +16,6 @@ payloads = []
 
 xmls = []
 
-is_valid_pcap = False
-
 def extract_payloads(input_file):
     
 	with open(input_file, 'r') as text:
@@ -27,13 +25,11 @@ def extract_payloads(input_file):
 			index = line.find('0013')
 			if index != -1:
 				payloads.append(line[index:].strip())
-				is_valid_pcap = True
 			else:
-				is_valid_pcap = False
 				payloads.append(None)
 
 def decode_payloads(payloads):
-	for payload in payloads:
+	for payload in payloads: 
 		try:
 			decoded_pcap = decoder(payload)
 			xmls.append(str(decoded_pcap))
@@ -83,7 +79,7 @@ def update_traffic_light():
 	cv2x_idx = 0
 
 	# Sample packets of SPaT data
-	sample_pcaps = payloads
+	sample_pcaps = payloads[0]
 
 	while True:
 		# Gracefully exit if "x" button is pressed
@@ -97,9 +93,9 @@ def update_traffic_light():
 		currentSec = utcMin*60 + utcSec
 
 		# Get the next C-V2X pcap message from sample array
-		pcap_data = sample_pcaps[cv2x_idx]
-		cv2x_idx = (cv2x_idx + 1) % (len(sample_pcaps))
-
+		pcap_data = sample_pcaps
+		#cv2x_idx = (cv2x_idx + 1) % (len(sample_pcaps))
+  
 		if not pcap_data or len(pcap_data) == 0:
 			print("ERROR: No C-V2X PCAP received.")
 		else:
@@ -138,7 +134,7 @@ def update_traffic_light():
 							# print("state:", currentState)
 							# print("end time:", type(minEndTime))
 
-							if currentPhase == 7: # additional phases may be included as the same if-statements
+							if currentPhase == 1: # additional phases may be included as the same if-statements
 								# Calculate the current time until next state
 								timeEndSec = minEndTime / 10
 								countdown = writeTime(timeEndSec, currentSec, utcDeci)
@@ -150,24 +146,268 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
 
-				# Reflect changes in traffic light visualization
-			root.update()
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+							elif currentPhase == 2: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
 
-		# Wait a second before reading next SPaT
-		time.sleep(1) # rate for testing, can be eliminated for real-time rate
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)	
+
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+							elif currentPhase == 3: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+							elif currentPhase == 4: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+         
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+							elif currentPhase == 5: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+        
+							elif currentPhase == 6: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+         
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+
+								# After handling specific state branches, log and force UI refresh for this phase
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+							elif currentPhase == 7: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+         
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+         
+							elif currentPhase == 8: # additional phases may be included as the same if-statements
+								# Calculate the current time until next state
+								timeEndSec = minEndTime / 10
+								countdown = writeTime(timeEndSec, currentSec, utcDeci)
+
+								# Set the corresponding traffic light
+								if currentState == "stop-And-Remain":
+									canvas.itemconfig(first_light, fill="red")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 95)
+									time.sleep(1)
+								elif currentState == "protected-clearance":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="yellow")
+									canvas.itemconfig(third_light, fill="gray")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 205)
+									time.sleep(1)
+								elif currentState == "protected-Movement-Allowed":
+									canvas.itemconfig(first_light, fill="gray")
+									canvas.itemconfig(second_light, fill="gray")
+									canvas.itemconfig(third_light, fill="green")
+									canvas.itemconfig(text_light, text=countdown)
+									canvas.coords(text_light, offset+50, 315)
+									time.sleep(1)
+        
+								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
+								root.update_idletasks()
+								root.update()
+        
+					# End of if spat_msg_decoded
+					else:
+						# If decoded message is falsy, log helpful debug info
+						print(f"[DEBUG] idx={cv2x_idx} spat_msg_decoded is falsy or not present")
+
+					# Reflect changes in traffic light visualization (fallback)
+					root.update()
+
+			# Wait a second before reading next SPaT
+			time.sleep(1) # rate for testing, can be eliminated for real-time rate
 
 # Close program when exit button is pressed
 def on_closing():
@@ -182,6 +422,5 @@ update_traffic_light()
 # run tkinter program infinitely
 # until an interrupt occurs
 root.mainloop()
-
 
 

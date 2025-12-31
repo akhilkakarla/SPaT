@@ -85,7 +85,119 @@ def get_traffic_light_state(payload):
                 # Find phase 7 (as per visualization script)
                 for phase in intersection_phases:
                     current_phase = int(phase.get('signalGroup', 0))
-                    if current_phase == 7:
+                    if current_phase == 1:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 2:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 3:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 4:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 5:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 6:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 7:
+                        current_state = str(phase['state-time-speed'][0]['eventState'])
+                        min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                        
+                        # Calculate countdown
+                        time_end_sec = min_end_time / 10
+                        countdown = round(time_end_sec - (current_sec + utc_deci / 10.0), 2)
+                        
+                        return {
+                            'intersection_id': intersection_id,
+                            'phase': current_phase,
+                            'state': current_state,
+                            'countdown': max(0, countdown),  # Ensure non-negative
+                            'timestamp': time.time()
+                        }
+                        
+                    elif current_phase == 8:
                         current_state = str(phase['state-time-speed'][0]['eventState'])
                         min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
                         

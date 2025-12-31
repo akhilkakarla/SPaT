@@ -112,21 +112,6 @@ export default function VisualizationScreen() {
           <Text style={styles.error}>Error: {error}</Text>
         </View>
       )}
-
-      {/* SPaT Messages Section */}
-      <Text style={styles.sectionTitle}>SPaT Messages (latest)</Text>
-      {messages && messages.length > 0 ? (
-        messages.slice(0, 5).map((m) => (
-          <View key={m.id} style={styles.messageCard}>
-            <Text style={styles.messageId}>#{m.id}</Text>
-            <Text style={styles.messageXml} numberOfLines={3}>
-              {m.message_xml}
-            </Text>
-          </View>
-        ))
-      ) : (
-        <Text style={styles.noData}>No messages available.</Text>
-      )}
     </ScrollView>
   );
 }

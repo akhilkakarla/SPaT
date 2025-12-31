@@ -43,7 +43,7 @@ export default function TrafficLight({ state, countdown, intersectionId }: Traff
           {/* Green Light */}
           <View style={[styles.light, { backgroundColor: colors.green }]} />
         </View>
-        
+        s
         {/* Countdown Timer */}
         {countdown !== null && state && (
           <View style={styles.countdownContainer}>
@@ -58,7 +58,7 @@ export default function TrafficLight({ state, countdown, intersectionId }: Traff
       {state && (
         <Text style={styles.stateText}>
           {state === 'stop-And-Remain' && 'STOP'}
-          {state === 'protected-clearance' && 'YIELD'}
+          {state === 'protected-clearance' && 'SLOW DOWN'}
           {state === 'protected-Movement-Allowed' && 'GO'}
         </Text>
       )}
