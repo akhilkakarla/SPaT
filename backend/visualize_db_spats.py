@@ -117,14 +117,11 @@ def update_traffic_light():
 					# Get the intersection ID decoded SPaT message (and display it in traffic light GUI)
 					intersectionId = spat_msg_decoded()['value'][1]['intersections'][0]['id']['id']
 					canvas.itemconfig(intersection_id_text, text=intersectionId)
-
-					# Optional: Filter by intersection ID (to prevent crossed SPaT streams)
-					if intersectionId == 871:
 						# Get all states from decoded SPaT message
-						instersectionPhaseArray = spat_msg_decoded()['value'][1]['intersections'][0]['states']
+					instersectionPhaseArray = spat_msg_decoded()['value'][1]['intersections'][0]['states']
 
 						# Iterate through each phase of the decoded SPaT message
-						for phase in instersectionPhaseArray:
+					for phase in instersectionPhaseArray:
 							# Get the current phase, state, and end time of the phase
 							currentPhase = int(phase.get('signalGroup'))
 							currentState = str(phase['state-time-speed'][0]['eventState'])
@@ -146,21 +143,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
 
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -179,21 +176,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)	
+									time.sleep(2)	
 
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -212,21 +209,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
 
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -245,21 +242,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
          
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -278,21 +275,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
 
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -312,22 +309,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
-         
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
 
 								# After handling specific state branches, log and force UI refresh for this phase
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
@@ -346,21 +342,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
          
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
 								root.update_idletasks()
@@ -378,21 +374,21 @@ def update_traffic_light():
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 95)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-clearance":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="yellow")
 									canvas.itemconfig(third_light, fill="gray")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 205)
-									time.sleep(1)
+									time.sleep(2)
 								elif currentState == "protected-Movement-Allowed":
 									canvas.itemconfig(first_light, fill="gray")
 									canvas.itemconfig(second_light, fill="gray")
 									canvas.itemconfig(third_light, fill="green")
 									canvas.itemconfig(text_light, text=countdown)
 									canvas.coords(text_light, offset+50, 315)
-									time.sleep(1)
+									time.sleep(2)
         
 								print(f"[DEBUG] idx={cv2x_idx} phase={currentPhase} state={currentState} countdown={countdown}")
 								root.update_idletasks()

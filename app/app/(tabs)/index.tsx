@@ -12,14 +12,6 @@ export default function HomeScreen() {
     <View style={styles.container}>
 
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.mainMenuButton}
-          onPress={() => setSidebarOpen((s) => !s)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={{ paddingHorizontal: 12, paddingVertical: 8 }}>☰</Text>
-        </TouchableOpacity>
-
         <Text style={{ textAlign: 'center', color: 'black', fontSize: 55, fontWeight: 'bold' }}>
           SpaT
         </Text>
@@ -52,29 +44,29 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
+      {/* side panel toggle button - always visible on the left edge */}
+      <TouchableOpacity
+        style={styles.mainMenuButton}
+        onPress={() => setSidebarOpen(prev => !prev)}
+        accessibilityLabel={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        <Text style={{ color: 'white', padding: 8, fontWeight: 'bold' }}>{sidebarOpen ? '×' : '≡'}</Text>
+      </TouchableOpacity>
+
+      {/* overlay and sidebar - only render when open */}
       {sidebarOpen && (
-        <TouchableOpacity style={styles.overlay} onPress={() => setSidebarOpen(false)} />
+        <>
+          <TouchableOpacity style={styles.overlay} onPress={() => setSidebarOpen(false)} />
+          <View style={styles.sideBarOpen}>
+            <View style={styles.sideBarElementContainer}>
+              <Text style={styles.sideBarElement}>North</Text>
+              <Text style={styles.sideBarElement}>South</Text>
+              <Text style={styles.sideBarElement}>East</Text>
+              <Text style={styles.sideBarElement}>West</Text>
+            </View>
+          </View>
+        </>
       )}
-
-      <View style={sidebarOpen ? styles.sideBarOpen : styles.sideBar}>
-        <View style = {styles.sideBarElementContainer}>
-          <Text style = {styles.sideBarElement}>
-            North
-          </Text>
-
-          <Text style = {styles.sideBarElement}>
-            South
-          </Text>
-
-          <Text style = {styles.sideBarElement}>
-            East
-          </Text>
-
-          <Text style = {styles.sideBarElement}>
-            West
-          </Text>
-        </View>
-      </View>
 
     </View>
   );
@@ -141,7 +133,7 @@ const styles = StyleSheet.create({
 
   sideBar: {
     height: deviceHeight,
-    width: 80,
+    width: 50,
     backgroundColor: 'red',
     position: 'absolute',
     left: 0,
@@ -152,7 +144,7 @@ const styles = StyleSheet.create({
 
   sideBarOpen: {
     height: deviceHeight,
-    width: 250,
+    width: 100,
     backgroundColor: 'red',
     position: 'absolute',
     left: 0,
@@ -170,6 +162,10 @@ const styles = StyleSheet.create({
     left: 15,
     top: 20,
     zIndex: 1100,
+    height: 30,
+    width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   overlay: {

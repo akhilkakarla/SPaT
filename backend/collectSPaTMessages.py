@@ -23,28 +23,30 @@ for payload in payloads:
     except Exception as e:
         print(f"Decoding payload failed: {e}")
 
-try:
-    conn = psycopg2.connect(
-        dbname="spat_db",
-        user="postgres",
-        password="1804",
-        host="localhost",
-        port="5432"
-    )
+def collectSPaTMessages(xmls):
+    
+    try:
+        conn = psycopg2.connect(
+            dbname="spat_db",
+            user="postgres",
+            password="1804",
+            host="localhost",
+            port="5432"
+        )
 
-    print("Connected to database successfully!")
+        print("Connected to database successfully!")
 
-    cur = conn.cursor()
-            
-    for xml in xmls:
-        cur.execute("INSERT INTO spat_messages (message_xml) VALUES (%s);", (xml,))
+        cur = conn.cursor()
+                
+        for xml in xmls:
+            cur.execute("INSERT INTO spat_messages (message_xml) VALUES (%s);", (xml,))
 
-    conn.commit()
+        conn.commit()
 
-    cur.close()
-    conn.close()
+        cur.close()
+        conn.close()
 
-except Exception as e:
-    print("Error:", e)
+    except Exception as e:
+        print("Error:", e)
 
 text.close()
