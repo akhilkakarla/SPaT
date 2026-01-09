@@ -123,9 +123,9 @@ def display_phases_loop():
             # Decode SPaT message (same as visualize_db_spats.py)
             try:
                 spat_msg_decoded = cv2x_msg.interpret_spat()
-                time.sleep(2)
             except Exception as e:
                 print(f"Error decoding SPaT in display loop: {e}")
+                time.sleep(2)
                 continue
             
             if not spat_msg_decoded:
@@ -328,9 +328,11 @@ def traffic_light_state():
 
 if __name__ == '__main__':
     # Start background thread to loop through phases with 2-second delays
-    display_thread = threading.Thread(target=display_phases_loop, daemon=True, name='display_phases_loop')
+    # Use daemon=False so thread continues running even with Flask's reloader
+    display_thread = threading.Thread(target=display_phases_loop, daemon=False, name='display_phases_loop')
     display_thread.start()
     print("Started background thread to loop through traffic phases with 2-second delays")
     
     # For development only. Use a proper WSGI server in production.
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5430)), debug=True)
+    # Set use_reloader=False to prevent Flask from killing the background thread
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5430)), debug=True, use_reloader=False)
