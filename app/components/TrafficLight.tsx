@@ -42,8 +42,7 @@ export default function TrafficLight({ state, countdown, intersectionId }: Traff
           
           {/* Green Light */}
           <View style={[styles.light, { backgroundColor: colors.green }]} />
-        </View>
-        s
+  </View>
         {/* Countdown Timer */}
         {countdown !== null && state && (
           <View style={styles.countdownContainer}>

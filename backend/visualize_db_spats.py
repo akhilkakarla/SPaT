@@ -418,5 +418,3 @@ update_traffic_light()
 # run tkinter program infinitely
 # until an interrupt occurs
 root.mainloop()
-
-

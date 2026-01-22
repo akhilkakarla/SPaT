@@ -4,7 +4,6 @@ import psycopg2
 import os
 import sys
 import time
-import threading
 
 # Add the j2735_decoder directory to the path so we can import the modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'SPaT_copy', 'j2735_decoder'))
@@ -34,7 +33,7 @@ def spat_messages():
     try:
         conn = get_db_conn()
         cur = conn.cursor()
-        cur.execute('SELECT id, message_xml FROM spat_messages ORDER BY id DESC LIMIT 100;')
+        cur.execute('SELECT id, message_xml FROM spat_messages ORDER BY id ASC LIMIT 1;')
         rows = cur.fetchall()
         messages = [{'id': r[0], 'message_xml': r[1]} for r in rows]
         cur.close()
@@ -80,7 +79,7 @@ def get_signal_color(state):
         return 'GREEN'
     return 'UNKNOWN'
 
-
+'''
 def display_phases_loop():
     """Background thread that loops through all signal phases with 2-second delays - same as visualize_db_spats.py"""
     while True:
@@ -102,7 +101,7 @@ def display_phases_loop():
             # Extract payloads from file (same as visualize_db_spats.py)
             payloads = extract_payloads_from_file(data_file)
             
-            if not payloads:
+            if not payloads:   
                 print("No payloads found in data file for display loop, waiting...")
                 continue
             
@@ -123,9 +122,9 @@ def display_phases_loop():
             # Decode SPaT message (same as visualize_db_spats.py)
             try:
                 spat_msg_decoded = cv2x_msg.interpret_spat()
+                time.sleep(2)
             except Exception as e:
                 print(f"Error decoding SPaT in display loop: {e}")
-                time.sleep(2)
                 continue
             
             if not spat_msg_decoded:
@@ -147,32 +146,37 @@ def display_phases_loop():
                     current_state = str(phase['state-time-speed'][0]['eventState'])
                     min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
                     
-                    # Get the current time (for calculating remaining time) - recalculate each iteration
-                    utc_time = time.gmtime()
-                    utc_min = utc_time.tm_min
-                    utc_sec = utc_time.tm_sec
-                    utc_deci = int((time.time() % 1) * 10)
-                    current_sec = utc_min * 60 + utc_sec
-                    
-                    # Calculate the current time until next state (same as visualize_db_spats.py)
-                    time_end_sec = min_end_time / 10.0
-                    time_end_sec_in_minute = time_end_sec % 60.0
-                    absolute_end_sec = (utc_min * 60) + time_end_sec_in_minute
-                    
-                    if absolute_end_sec <= current_sec:
-                        absolute_end_sec += 60.0
-                    
-                    countdown = writeTime(absolute_end_sec, current_sec, utc_deci)
-                    countdown = max(0, countdown)
-                    
-                    # Get signal color based on state
-                    color = get_signal_color(current_state)
-                    
-                    # Display phase information (same format as visualize_db_spats.py)
-                    print(f"Phase {current_phase}: Signal Color = {color} | State = {current_state} | Countdown = {countdown:.1f}s")
-                    
-                    # Sleep 2 seconds before looping to next phase (same as visualize_db_spats.py)
-                    time.sleep(2)
+                    # Wait until countdown reaches 0 before moving to next phase
+                    while True:
+                        # Get the current time (for calculating remaining time) - recalculate each iteration
+                        utc_time = time.gmtime()
+                        utc_min = utc_time.tm_min
+                        utc_sec = utc_time.tm_sec
+                        utc_deci = int((time.time() % 1) * 10)
+                        current_sec = utc_min * 60 + utc_sec
+                        
+                        # Calculate the current time until next state (same as visualize_db_spats.py)
+                        time_end_sec = min_end_time / 10.0
+                        time_end_sec_in_minute = time_end_sec % 60.0
+                        absolute_end_sec = (utc_min * 60) + time_end_sec_in_minute
+                        
+                        if absolute_end_sec <= current_sec:
+                            absolute_end_sec += 60.0
+                        
+                        countdown = writeTime(absolute_end_sec, current_sec, utc_deci)
+                        countdown = max(0, countdown)
+
+                        # Get signal color based on state
+                        color = get_signal_color(current_state)
+                        
+                        # Display phase information (same format as visualize_db_spats.py)
+                        print(f"Phase {current_phase}: Signal Color = {color} | State = {current_state} | Countdown = {countdown:.1f}s")
+                        
+                        # If countdown has reached 0, move to next phase
+                        if countdown <= 0:
+                            break
+                        
+                        # Sleep for a short interval before checking again (e.g., every 0.1 seconds)
                     
                 except Exception as e:
                     print(f"Error processing phase in display loop: {e}")
@@ -186,7 +190,7 @@ def display_phases_loop():
             print(f"Error in display_phases_loop: {e}")
             import traceback
             traceback.print_exc()
-
+'''
 
 @app.route('/api/traffic_light_state', methods=['GET'])
 def traffic_light_state():
@@ -239,10 +243,10 @@ def traffic_light_state():
         try:
             spat_msg_decoded = cv2x_msg.interpret_spat()
         except Exception as e:
-            return jsonify({
+            return jsonify({    
                 'error': f'Error decoding SPaT: {str(e)}',
                 'intersection_id': None,
-                'phases': []
+                'phases': []              
             }), 500
         
         if not spat_msg_decoded:
@@ -298,7 +302,7 @@ def traffic_light_state():
                 
                 # Ensure countdown is non-negative
                 countdown = max(0, countdown)
-                
+
                 # Debug: print timing info
                 print(f"Phase {current_phase}: state={current_state}, maxEndTime={min_end_time}ds ({time_end_sec}s), abs_end={absolute_end_sec}s, current={current_sec}s, countdown={countdown:.1f}s")
                 
@@ -308,6 +312,7 @@ def traffic_light_state():
                     'countdown': countdown,
                     'intersection_id': intersection_id
                 })
+
             except Exception as e:
                 print(f"Error processing phase {phase.get('signalGroup', 'unknown')}: {e}")
                 import traceback
@@ -327,12 +332,12 @@ def traffic_light_state():
 
 
 if __name__ == '__main__':
+    '''
     # Start background thread to loop through phases with 2-second delays
-    # Use daemon=False so thread continues running even with Flask's reloader
-    display_thread = threading.Thread(target=display_phases_loop, daemon=False, name='display_phases_loop')
+    display_thread = threading.Thread(target=display_phases_loop, daemon=True, name='display_phases_loop')
     display_thread.start()
     print("Started background thread to loop through traffic phases with 2-second delays")
+    '''
     
     # For development only. Use a proper WSGI server in production.
-    # Set use_reloader=False to prevent Flask from killing the background thread
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5430)), debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5430)), debug=True)

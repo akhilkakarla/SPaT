@@ -28,7 +28,7 @@ export default function TabLayout() {
         name="visualization"
         options={{
           title: 'Visualization',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="car.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
     </Tabs>

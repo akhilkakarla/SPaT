@@ -44,6 +44,12 @@ export default function HomeScreen() {
         </View>
       </Modal>
 
+      <View style = {styles.slogan}>
+          <Text style = {styles.sloganText}>
+            Real Time Traffic Signal Data 
+          </Text>
+      </View>
+
       {/* side panel toggle button - always visible on the left edge */}
       <TouchableOpacity
         style={styles.mainMenuButton}
@@ -188,5 +194,18 @@ const styles = StyleSheet.create({
 
   sideBarElementContainer: {
     marginTop: (deviceHeight / 6),
-  }
+  },
+
+  slogan: {
+    alignItems: 'center',
+    paddingTop: 10,
+    position: 'absolute',
+    top: 220,
+  },
+
+  sloganText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: 'black',
+  },
 });
