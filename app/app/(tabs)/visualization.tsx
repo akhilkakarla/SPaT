@@ -117,55 +117,18 @@ export default function VisualizationScreen() {
     setRefreshing(false);
   };
 
-  // Method to check if countdown is 0 and switch to next traffic phase
-  const checkAndSwitchPhase = React.useCallback(() => {
-    // Get the current displayed phase from refs to avoid stale closure
-    const currentPhases = phasesRef.current;
-    const currentFrozenPhases = frozenDerivedPhasesRef.current;
-    const active = currentFrozenPhases || currentPhases;
-    
-    if (!active || active.length === 0) {
-      return false;
-    }
-    
-    // Get current phase index from state (will be accessed via setPhaseIndex callback)
-    setPhaseIndex((currentIndex) => {
-      const displayed = active[currentIndex];
-      const displayedCountdown = displayed?.countdown ?? null;
-      
-      // Check if countdown has reached 0 or is invalid
-      if (displayedCountdown !== null && displayedCountdown <= 0) {
-        const phaseOrder = frozenDerivedPhasesRef.current || phasesRef.current;
-        if (!phaseOrder || phaseOrder.length === 0) {
-          console.log('[Phase Switch] No phase order available for switching');
-          return currentIndex;
-        }
-        
-        // Move to next phase
-        const nextIndex = (currentIndex + 1) % phaseOrder.length;
-        console.log(`[Phase Switch] Countdown reached 0 (${displayedCountdown}s), switching from phase index ${currentIndex} to ${nextIndex}`);
-        return nextIndex;
-      }
-      
-      return currentIndex; // No switch needed
-    });
-    
-    return true; // Method was called
-  }, []); // No dependencies - uses refs and state setters
-
   useEffect(() => {
     loadData();
-
-    // Auto-refresh traffic light state every 2 seconds
-    // Also check if countdown reached 0 and switch phase accordingly
+    // Auto-refresh traffic light state every 2 seconds to get updated countdowns
+    // Phase switching is handled by the countdown-based cycling effect below
+    /*
     const interval = setInterval(() => {
       fetchTrafficLightState();
-      // Check and switch phase if countdown is 0
-      checkAndSwitchPhase();
     }, 2000);
+    /*/
 
-    return () => clearInterval(interval);
-  }, [checkAndSwitchPhase]);
+    //return () => clearInterval(interval);
+  }, []);
 
   // Update refs when state changes
   useEffect(() => {
@@ -179,6 +142,9 @@ export default function VisualizationScreen() {
   // Cycle through phases, waiting for the full countdown duration of each phase
   // Only depends on phaseIndex so it doesn't restart when phases updates via polling
   useEffect(() => {
+    // Minimum display duration to ensure red lights stay visible
+    const MIN_PHASE_DURATION_MS = 1500; // 1.5 seconds minimum per phase
+    
     // Don't cycle if still loading or no phases yet
     if (loading || !phases || phases.length === 0) {
       console.log('[Phase Cycling] Skipping - loading:', loading, 'phases:', phases?.length ?? 0);
@@ -216,20 +182,20 @@ export default function VisualizationScreen() {
     
     console.log(`[Phase Cycling] Phase ${phaseNumber} (index ${validIndex}): countdown=${countdown}s, state=${phaseState}`);
     
-    // If countdown is null, invalid, or 0, move immediately to next phase
-    if (countdown === null || countdown <= 0 || isNaN(countdown)) {
-      console.log(`[Phase Cycling] Countdown invalid (${countdown}), moving to next phase immediately`);
-      const nextIndex = (validIndex + 1) % phaseOrder.length;
-      // Use setTimeout to avoid updating state during render
-      setTimeout(() => setPhaseIndex(nextIndex), 0);
-      return;
+    // Calculate effective wait time: use countdown if available, but ensure minimum display duration
+    let waitTimeMs = MIN_PHASE_DURATION_MS; // Default to minimum
+    
+    if (countdown !== null && countdown > 0 && !isNaN(countdown)) {
+      // Use the countdown value but ensure it's at least MIN_PHASE_DURATION_MS
+      const countdownMs = countdown * 1000;
+      waitTimeMs = Math.max(MIN_PHASE_DURATION_MS, Math.min(countdownMs, 300000)); // Cap at 5 minutes
+      console.log(`[Phase Cycling] Using countdown: ${countdown}s = ${countdownMs}ms, adjusted to ${waitTimeMs}ms`);
+    } else {
+      // Countdown is invalid, use minimum duration
+      console.log(`[Phase Cycling] Countdown invalid (${countdown}), using minimum phase duration (${MIN_PHASE_DURATION_MS}ms)`);
     }
     
-    // Wait for the full countdown duration before moving to next phase
-    // Convert seconds to milliseconds, ensure it's reasonable (between 100ms and 5 minutes)
-    const waitTimeMs = Math.min(Math.max(100, countdown * 1000), 300000);
-    
-    console.log(`[Phase Cycling] Phase ${phaseNumber}: Waiting ${countdown}s (${waitTimeMs}ms) before next phase`);
+    console.log(`[Phase Cycling] Phase ${phaseNumber}: Waiting ${waitTimeMs}ms before next phase`);
     
     const timeoutId = setTimeout(() => {
       console.log(`[Phase Cycling] Timeout fired for phase ${phaseNumber}, moving to next phase`);

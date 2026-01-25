@@ -63,6 +63,9 @@ def writeTime(endTime, currentSec, currentDecSec):
     """Calculate the phase's state time remaining - same as visualize_db_spats.py"""
     currentTime = currentSec + currentDecSec / 10.0
     countdown = round(endTime - currentTime, 2)
+    # Ensure countdown is at least 0.1 seconds to prevent phases from appearing to have no duration
+    if countdown < 0.1:
+        countdown = 0.1
     return countdown
 
 
@@ -190,8 +193,8 @@ def display_phases_loop():
             print(f"Error in display_phases_loop: {e}")
             import traceback
             traceback.print_exc()
-'''
 
+'''
 @app.route('/api/traffic_light_state', methods=['GET'])
 def traffic_light_state():
     """Returns all traffic light phases using the same methodology as visualize_db_spats.py"""
@@ -273,11 +276,13 @@ def traffic_light_state():
         phases = []
         for phase in intersection_phases:
             try:
+                counter = 0
                 current_phase = int(phase.get('signalGroup'))
-                current_state = str(phase['state-time-speed'][0]['eventState'])
+                current_state = str(phase['state-time-speed'][counter]['eventState'])
                 
-                # Get timing information - maxEndTime is in deciseconds
-                min_end_time = phase['state-time-speed'][0]['timing']['maxEndTime']
+                # Get timing information - minEndTime is in deciseconds
+                min_end_time = phase['state-time-speed'][counter]['timing']['minEndTime']
+            
                 
                 # Calculate countdown (EXACTLY as visualize_db_spats.py does it)
                 # maxEndTime is in deciseconds, convert to seconds
@@ -312,6 +317,9 @@ def traffic_light_state():
                     'countdown': countdown,
                     'intersection_id': intersection_id
                 })
+                
+                counter += 1
+                print("Phase being looped: ", current_phase)
 
             except Exception as e:
                 print(f"Error processing phase {phase.get('signalGroup', 'unknown')}: {e}")
