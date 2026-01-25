@@ -29,10 +29,13 @@ export default function VisualizationScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [displayedCountdown, setDisplayedCountdown] = useState<number | null>(null); // Live countdown for UI display
   
   // Use refs to track latest values for use in interval callbacks
   const phasesRef = useRef(phases);
   const frozenDerivedPhasesRef = useRef(frozenDerivedPhases);
+  const phaseStartTimeRef = useRef<number | null>(null); // When current phase started (Date.now())
+  const phaseInitialCountdownRef = useRef<number | null>(null); // Initial countdown value at start
 
   const API_BASE_URL = 'http://localhost:5430/api';
 
@@ -40,7 +43,7 @@ export default function VisualizationScreen() {
   // development environment (this is a best-effort helper and will silently fail
   // on real devices / most React Native runtimes where child_process isn't available).
  
-  const fetchTrafficLightState = async () => {
+  const fetchTrafficLightState = async (isRefresh: boolean = false) => {
       try {
         const res = await fetch(`${API_BASE_URL}/traffic_light_state`);
         if (!res.ok) {
@@ -50,11 +53,14 @@ export default function VisualizationScreen() {
         // If API returned multiple phases, store them and reset index
         if (data && Array.isArray(data.phases)) {
           const incomingSig = JSON.stringify(data.phases.map((p: any) => ({ phase: p.phase, state: p.state })));
-          // If phases structure changed, reset index; otherwise preserve current index so cycling isn't interrupted by polling
+          // If phases structure changed, reset index; otherwise preserve current index so cycling isn't interrupted
           if (incomingSig !== phasesSignature) {
             setPhases(data.phases || []);
             phasesRef.current = data.phases || [];
-            setPhaseIndex(0);
+            // Only reset phase index on initial load, not on refresh
+            if (!isRefresh) {
+              setPhaseIndex(0);
+            }
             setPhasesSignature(incomingSig);
           } else {
             // update phases content (e.g., refreshed countdowns) but keep index
@@ -113,21 +119,16 @@ export default function VisualizationScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([fetchTrafficLightState(), fetchMessages()]);
+    // Only fetch messages on refresh - do NOT fetch traffic light state
+    // This prevents interrupting the phase countdown cycle
+    await fetchMessages();
     setRefreshing(false);
   };
 
   useEffect(() => {
     loadData();
-    // Auto-refresh traffic light state every 2 seconds to get updated countdowns
-    // Phase switching is handled by the countdown-based cycling effect below
-    /*
-    const interval = setInterval(() => {
-      fetchTrafficLightState();
-    }, 2000);
-    /*/
-
-    //return () => clearInterval(interval);
+    // Do NOT poll every 2 seconds - phases will cycle based on their countdown durations
+    // The countdown timer will decrement locally on the frontend
   }, []);
 
   // Update refs when state changes
@@ -138,6 +139,36 @@ export default function VisualizationScreen() {
   useEffect(() => {
     frozenDerivedPhasesRef.current = frozenDerivedPhases;
   }, [frozenDerivedPhases]);
+
+  // Local countdown timer: decrements every 100ms based on elapsed time since phase start
+  useEffect(() => {
+    // Initialize countdown values when phase index changes
+    const phaseOrder = frozenDerivedPhasesRef.current || phasesRef.current;
+    if (!phaseOrder || phaseOrder.length === 0 || !phases) return;
+
+    const validIndex = phaseIndex >= 0 && phaseIndex < phaseOrder.length ? phaseIndex : 0;
+    const currentPhase = phases[validIndex];
+    
+    if (!currentPhase || currentPhase.countdown === null) return;
+
+    // Reset timer refs when phase changes
+    phaseStartTimeRef.current = Date.now();
+    phaseInitialCountdownRef.current = currentPhase.countdown;
+    setDisplayedCountdown(currentPhase.countdown);
+
+    // Countdown interval: decrement every 100ms based on elapsed time
+    const countdownInterval = setInterval(() => {
+      if (phaseStartTimeRef.current === null || phaseInitialCountdownRef.current === null) return;
+
+      const elapsedMs = Date.now() - phaseStartTimeRef.current;
+      const elapsedSec = elapsedMs / 1000;
+      const newCountdown = Math.max(0, phaseInitialCountdownRef.current - elapsedSec);
+
+      setDisplayedCountdown(Math.round(newCountdown * 10) / 10);
+    }, 100);
+
+    return () => clearInterval(countdownInterval);
+  }, [phaseIndex, phases]);
 
   // Cycle through phases, waiting for the full countdown duration of each phase
   // Only depends on phaseIndex so it doesn't restart when phases updates via polling
@@ -236,13 +267,13 @@ export default function VisualizationScreen() {
         const active = frozenDerivedPhases || phases;
         const displayed = active && active.length ? active[phaseIndex] : trafficLightState;
         const displayedState = displayed?.state || null;
-        const displayedCountdown = displayed?.countdown ?? null;
+        const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
         const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
 
         return (
           <TrafficLight
             state={displayedState}
-            countdown={displayedCountdown}
+            countdown={countdownToDisplay}
             intersectionId={displayedIntersection}
           />
         );
