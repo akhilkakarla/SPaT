@@ -49,7 +49,7 @@ def collect_pcaps():
         
 collect_pcaps()
 
-cv2x_msg = CV2X_Message(pcaps[345])
+cv2x_msg = CV2X_Message(pcaps[0])
 
 try:  
     spat_msg_decoded = cv2x_msg.interpret_spat()
