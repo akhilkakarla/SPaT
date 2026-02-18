@@ -2,6 +2,7 @@
 j2735_decoder/__pycache__/
 spat_interpreter/__pycache__/
 backend/api/__pycache__/
+backend/api/__pycache__/
 
 #environments
 j2735_decoder/.j2735_decode/
@@ -14,4 +15,5 @@ app/package-lock.json
 app/.expo/web/
 
 #misc
+.DS_Store
 intern_project.code-workspace
