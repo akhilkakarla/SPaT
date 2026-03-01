@@ -1,10 +1,13 @@
-/*
 import { spawn } from 'child_process';
 
 const SPAT_URL = 'http://129.114.36.77:8080/spat';
 const DECODER_SCRIPT = '/Users/akhilkakarla/Desktop/SPaT/backend/decoder.py';
 
-function decodeWithPython(payload: string): Promise<string> {
+// Fallback sample payload (same as in backend/decoder.py) when API is unreachable
+const SAMPLE_PCAP =
+  '00134a4593d100801b3b5200001f207001046401310131001021a00e740fdc00c10d005320532008086803020343005043401ce812d803023200988098801c10d0053205320100868030203430';
+
+function decodeWithPython(payload) {
   return new Promise((resolve, reject) => {
     const proc = spawn('python', [DECODER_SCRIPT, payload]);
 
@@ -30,32 +33,26 @@ function decodeWithPython(payload: string): Promise<string> {
 }
 
 async function getAndDecodeSpat() {
+  let payload;
+
   try {
-    // fetch the current SPaT payload from the remote API
     const resp = await fetch(SPAT_URL);
+    payload = await resp.text();
+    console.log('Raw SPaT payload (from API):', payload);
+  } catch (err) {
+    console.warn('API unreachable (%s), using sample payload.', err.cause?.code || err.message);
+    payload = SAMPLE_PCAP;
+    console.log('Raw SPaT payload (sample):', payload);
+  }
 
-    // Adjust this depending on what the API actually returns:
-    // - if it returns a plain hex string, use resp.text()
-    // - if it returns JSON like { payload: "0013..." }, use (await resp.json()).payload
-    const payload = await resp.text();
-
-    console.log('Raw SPaT payload:', payload);
-
-    // Use the same Python decoder logic as backend/decoder.py
+  try {
     const decodedSpat = await decodeWithPython(payload);
-
     console.log('Decoded SPaT (XML):');
     console.log(decodedSpat);
   } catch (err) {
-    console.error('Error fetching or decoding SPaT:', err);
+    console.error('Error decoding SPaT:', err);
   }
+
 }
 
 getAndDecodeSpat();
-
-*/
-
-fetch('http://129.114.36.77:8080/spat')
-.then(response => response.json())
-.then(json => console.log(json))
-
