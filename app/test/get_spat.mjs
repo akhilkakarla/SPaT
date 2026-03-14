@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 
-const SPAT_URL = 'http://129.114.36.77:8080/spat';
+const SPAT_URL = 'http://localhost:5430/api/traffic_light_state';
 const DECODER_SCRIPT = '/Users/akhilkakarla/Desktop/SPaT/backend/decoder.py';
 
 // Fallback sample payload (same as in backend/decoder.py) when API is unreachable
