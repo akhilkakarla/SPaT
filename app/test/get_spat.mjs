@@ -1,11 +1,7 @@
 import { spawn } from 'child_process';
 
-const SPAT_URL = 'http://localhost:5430/api/traffic_light_state';
+const SPAT_URL = 'http://129.114.36.77:8080/spat';
 const DECODER_SCRIPT = '/Users/akhilkakarla/Desktop/SPaT/backend/decoder.py';
-
-// Fallback sample payload (same as in backend/decoder.py) when API is unreachable
-const SAMPLE_PCAP =
-  '00134a4593d100801b3b5200001f207001046401310131001021a00e740fdc00c10d005320532008086803020343005043401ce812d803023200988098801c10d0053205320100868030203430';
 
 function decodeWithPython(payload) {
   return new Promise((resolve, reject) => {
@@ -37,22 +33,34 @@ async function getAndDecodeSpat() {
 
   try {
     const resp = await fetch(SPAT_URL);
-    payload = await resp.text();
-    console.log('Raw SPaT payload (from API):', payload);
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    }
+    
+    const data = await resp.json();
+    console.log('API Response:', JSON.stringify(data, null, 2));
+    
+    // Extract payload from API response
+    // The API returns traffic light phase data, try different property names
+    payload = data;
+    console.log('Using payload for decoding:', payload);
+    if(payload === undefined){
+      console.log("PCAP is Undefined");
+    }
   } catch (err) {
-    console.warn('API unreachable (%s), using sample payload.', err.cause?.code || err.message);
-    payload = SAMPLE_PCAP;
-    console.log('Raw SPaT payload (sample):', payload);
+    console.warn('API unreachable (%s), using sample payload.', err.message);
   }
 
+  // Decode the payload using Python script
   try {
-    const decodedSpat = await decodeWithPython(payload);
+    console.log('\nDecoding payload with decoder.py...');
+    const decodedXml = await decodeWithPython(payload);
     console.log('Decoded SPaT (XML):');
-    console.log(decodedSpat);
+    console.log(decodedXml);
   } catch (err) {
-    console.error('Error decoding SPaT:', err);
+    console.error('Error decoding SPaT:', err.message);
   }
-
 }
 
 getAndDecodeSpat();
+
