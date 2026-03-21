@@ -6,8 +6,11 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, 'stored_xml_data');
+const PCAP_DIR = path.join(__dirname, 'stored_pcap_data');
 const LATEST_FILE = path.join(DATA_DIR, 'latest.xml');
+const LATEST_PCAP_FILE = path.join(PCAP_DIR, 'latest.pcap');
 const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
+const PCAP_HISTORY_FILE = path.join(PCAP_DIR, 'pcap_history.json');
 
 const SPAT_URL = 'http://129.114.36.77:8080/spat';
 const DECODER_SCRIPT = '/Users/akhilkakarla/Desktop/SPaT/backend/decoder.py';
@@ -19,8 +22,15 @@ if (!fs.existsSync(DATA_DIR)) {
   console.log(`✓ Created data directory: ${DATA_DIR}`);
 }
 
-// Store latest decoded XML in memory
+// Create pcap directory if it doesn't exist
+if (!fs.existsSync(PCAP_DIR)) {
+  fs.mkdirSync(PCAP_DIR, { recursive: true });
+  console.log(`✓ Created pcap directory: ${PCAP_DIR}`);
+}
+
+// Store latest decoded XML and payload in memory
 let latestDecodedXml = null;
+let latestPayload = null;
 let clients = new Set();
 let xmlHistory = [];
 
@@ -34,6 +44,17 @@ if (fs.existsSync(HISTORY_FILE)) {
   }
 }
 
+// Load pcap history from file if it exists
+let pcapHistory = [];
+if (fs.existsSync(PCAP_HISTORY_FILE)) {
+  try {
+    pcapHistory = JSON.parse(fs.readFileSync(PCAP_HISTORY_FILE, 'utf-8'));
+    console.log(`✓ Loaded ${pcapHistory.length} pcap messages from history`);
+  } catch (err) {
+    console.warn('Could not load pcap history:', err.message);
+  }
+}
+
 // WebSocket server
 const wss = new WebSocketServer({ port: WS_PORT });
 
@@ -41,9 +62,9 @@ wss.on('connection', (ws) => {
   console.log('✓ Client connected');
   clients.add(ws);
   
-  // Send latest XML to newly connected client
+  // Send latest XML and payload to newly connected client
   if (latestDecodedXml) {
-    ws.send(JSON.stringify({ type: 'decoded_xml', data: latestDecodedXml }));
+    ws.send(JSON.stringify({ type: 'decoded_xml', data: latestDecodedXml, payload: latestPayload }));
   }
   
   ws.on('close', () => {
@@ -52,15 +73,20 @@ wss.on('connection', (ws) => {
   });
 });
 
-// Save XML to file
-function saveXmlToFile(xml) {
+// Save XML and payload to file
+function saveXmlToFile(xml, payload) {
   try {
     // Save latest XML
     fs.writeFileSync(LATEST_FILE, xml, 'utf-8');
     
-    // Add to history with timestamp
+    // Add to history with timestamp and payload
     const timestamp = new Date().toISOString();
-    xmlHistory.push({ timestamp, xmlFile: `xml_${timestamp.replace(/[:.]/g, '-')}.xml` });
+    const xmlFileName = `xml_${timestamp.replace(/[:.]/g, '-')}.xml`;
+    xmlHistory.push({ 
+      timestamp, 
+      xmlFile: xmlFileName,
+      payload: payload
+    });
     
     // Keep only last 100 messages in memory
     if (xmlHistory.length > 100) {
@@ -71,21 +97,52 @@ function saveXmlToFile(xml) {
     fs.writeFileSync(HISTORY_FILE, JSON.stringify(xmlHistory, null, 2), 'utf-8');
     
     // Also save individual XML file
-    const xmlFileName = xmlHistory[xmlHistory.length - 1].xmlFile;
     fs.writeFileSync(path.join(DATA_DIR, xmlFileName), xml, 'utf-8');
   } catch (err) {
     console.error('Error saving XML:', err.message);
   }
 }
 
+// Save raw PCAP data to file
+function savePcapToFile(payload) {
+  try {
+    // Save latest PCAP
+    fs.writeFileSync(LATEST_PCAP_FILE, payload, 'utf-8');
+    
+    // Add to pcap history with timestamp
+    const timestamp = new Date().toISOString();
+    const pcapFileName = `pcap_${timestamp.replace(/[:.]/g, '-')}.pcap`;
+    pcapHistory.push({ 
+      timestamp, 
+      pcapFile: pcapFileName,
+      payload: payload
+    });
+    
+    // Keep only last 100 messages in memory
+    if (pcapHistory.length > 100) {
+      pcapHistory = pcapHistory.slice(-100);
+    }
+    
+    // Save pcap history
+    fs.writeFileSync(PCAP_HISTORY_FILE, JSON.stringify(pcapHistory, null, 2), 'utf-8');
+    
+    // Also save individual PCAP file
+    fs.writeFileSync(path.join(PCAP_DIR, pcapFileName), payload, 'utf-8');
+  } catch (err) {
+    console.error('Error saving PCAP:', err.message);
+  }
+}
+
 // Broadcast to all connected clients
-function broadcastDecodedXml(xml) {
+function broadcastDecodedXml(xml, payload) {
   latestDecodedXml = xml;
+  latestPayload = payload;
   
-  // Save to disk
-  saveXmlToFile(xml);
+  // Save XML and PCAP to disk
+  saveXmlToFile(xml, payload);
+  savePcapToFile(payload);
   
-  const message = JSON.stringify({ type: 'decoded_xml', data: xml });
+  const message = JSON.stringify({ type: 'decoded_xml', data: xml, payload: payload });
   clients.forEach(client => {
     if (client.readyState === 1) {  // WebSocket.OPEN = 1
       client.send(message);
@@ -127,8 +184,8 @@ async function pollAndDecode() {
       const payload = data.phases?.[0]?.payload || '00136E00382E4EEE997973CB8FA69DFB8000204000067A7028A82C00410D003BC07CC00408C8003000F801604800027001821A0020004A801010D0022C04AC430086001160080200A08C8003000C6006043400E001DA00D02180070001C10D000C401F0010086800F8022401C0430007C0';
       
       const decodedXml = await decodeWithPython(payload);
-      broadcastDecodedXml(decodedXml);
-      console.log('✓ Broadcasted and stored decoded XML');
+      broadcastDecodedXml(decodedXml, payload);
+      console.log('✓ Broadcasted and stored decoded XML with payload and raw PCAP');
     } catch (err) {
       console.error('✗ Error:', err.message);
     }
