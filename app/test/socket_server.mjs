@@ -33,7 +33,6 @@ let latestDecodedXml = null;
 let latestPayload = null;
 let clients = new Set();
 let xmlHistory = [];
-
 // Load history from file if it exists
 if (fs.existsSync(HISTORY_FILE)) {
   try {

@@ -40,6 +40,8 @@ with open(pcaps_file, 'r') as text:
 for pcap in pcaps:
     decoded_pcap = decoder(pcap)
     xmls.append(str(decoded_pcap))
+
+print(len(pcaps))
     
 @app.route('/api/spat_messages', methods=['GET'])
 def spat_messages():

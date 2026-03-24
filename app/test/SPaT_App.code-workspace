@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"path": "../../../SPaT_App"
+		},
+		{
+			"path": "../../../SPaT_App_Backend"
+		},
+		{
+			"path": "../../../HeatLifeWeb"
+		},
+		{
+			"path": "../../../CamATXWeb"
+		},
+		{
+			"path": "../../../LearningCAndC++"
+		},
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../SPaT_App_LiveSPaTAPI"
+		}
+	],
+	"settings": {},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": []
+	}
+}
