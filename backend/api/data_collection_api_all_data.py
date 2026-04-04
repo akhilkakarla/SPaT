@@ -5,8 +5,6 @@ import os
 import psycopg2
 from flask import Flask, jsonify
 from flask_cors import CORS
-
-loop_is_finished = False
      
 try:
     from CV2X_Message import CV2X_Message
@@ -106,8 +104,9 @@ def background_loop():
                 countdown = min_end_time / 10
                 time_until_next_phase = countdown
                 while time_until_next_phase > 0:
-                    time_until_next_phase -= 1
                     time.sleep(1)
+                    time_until_next_phase -= 1
+                    
             
 
 
@@ -160,4 +159,4 @@ if __name__ == '__main__':
 
     # 2. Start the Flask API
     # Note: use_reloader=False prevents the thread from starting twice
-    app.run(port=8082, debug=True, use_reloader=False)
+    app.run(port=8085, debug=True, use_reloader=False)

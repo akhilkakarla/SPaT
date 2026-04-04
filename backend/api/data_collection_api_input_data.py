@@ -49,7 +49,9 @@ def collect_pcaps():
         
 collect_pcaps()
 
-cv2x_msg = CV2X_Message(pcaps[0])
+pcap_msg = "00136E00382E4EEE997973CB8FA69DFB8000204000067A7028A82C00410D003BC07CC00408C8003000F801604800027001821A0020004A801010D0022C04AC430086001160080200A08C8003000C6006043400E001DA00D02180070001C10D000C401F0010086800F8022401C0430007C0"
+
+cv2x_msg = CV2X_Message(pcap_msg)
 
 try:  
     spat_msg_decoded = cv2x_msg.interpret_spat()
@@ -67,29 +69,31 @@ def background_loop():
     global time_until_next_phase
     global current_state
     global signal_color
-    
-    for phase in intersection_phases:
-        counter = 0
-        current_phase = int(phase.get('signalGroup'))
-        min_end_time = phase['state-time-speed'][counter]['timing']['minEndTime']
-        current_state = str(phase['state-time-speed'][counter]['eventState'])
 
-        if(current_state == 'protected-Movement-Allowed'):
-            signal_color = 'green'
-        elif(current_state == 'stop-And-Remain'):
-            signal_color = 'red'
-        else:
-            signal_color = 'yellow'
-        
-        countdown = min_end_time / 10
-        time_until_next_phase = countdown
-        while(time_until_next_phase > 0):
-            time_until_next_phase -= 1
-            time.sleep(1)
-        
-        if(time_until_next_phase <= 0):
-            continue
-        counter += 1
+    while(True):
+        for phase in intersection_phases:
+            counter = 0
+            current_phase = int(phase.get('signalGroup'))
+            min_end_time = phase['state-time-speed'][counter]['timing']['minEndTime']
+            current_state = str(phase['state-time-speed'][counter]['eventState'])
+
+            if(current_state == 'protected-Movement-Allowed'):
+                signal_color = 'green'
+            elif(current_state == 'stop-And-Remain'):
+                signal_color = 'red'
+            else:
+                signal_color = 'yellow'
+            
+            countdown = min_end_time / 10
+            time_until_next_phase = countdown
+            while(time_until_next_phase > 0):
+                time.sleep(1)
+                time_until_next_phase -= 1
+                
+            
+            if(time_until_next_phase <= 0):
+                continue
+            counter += 1
         
 
 @app.route('/status', methods=['GET'])
@@ -104,4 +108,4 @@ if __name__ == '__main__':
 
     # 2. Start the Flask API
     # Note: use_reloader=False prevents the thread from starting twice
-    app.run(port=8082, debug=True, use_reloader=False)
+    app.run(port=8084, debug=True, use_reloader=False)
