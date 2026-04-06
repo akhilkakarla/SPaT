@@ -42,24 +42,6 @@ for pcap in pcaps:
     decoded_pcap = decoder(pcap)
     xmls.append(str(decoded_pcap))
 
-decoded_pcaps = []
-for i, pcap_hex in enumerate(pcaps):
-    try:
-        cv2x_msg = CV2X_Message(pcap_hex)
-        spat_msg_decoded = cv2x_msg.interpret_spat()
-        spat_dict = spat_msg_decoded()
-        intersection_id = spat_dict['value'][1]['intersections'][0]['id']['id']
-        intersection_phases = spat_dict['value'][1]['intersections'][0]['states']
-        decoded_pcaps.append({
-            'index': i,
-            'intersection_id': intersection_id,
-            'phases': intersection_phases,
-            'spat_dict': spat_dict,
-        })
-        print(f"Decoded pcap {i}: intersection_id={intersection_id}, phases={len(intersection_phases)}")
-    except Exception as e:
-        print(f"ERROR decoding pcap {i}: {e}")
-
 @app.route('/api/spat_messages', methods=['GET'])
 def spat_messages():
         try:
@@ -92,137 +74,157 @@ def get_signal_color(state):
         return 'GREEN'
     return 'UNKNOWN'
 
+
+def _phases_from_pcap_hex(pcap_data):
+    """
+    Decode one hex pcap payload to intersection_id + phases list.
+    Returns None if this payload should be skipped.
+    """
+    if not pcap_data or len(pcap_data) == 0:
+        return None
+
+    try:
+        cv2x_msg = CV2X_Message(pcap_data)
+    except Exception as e:
+        print(f"CV2X_Message failed: {e}")
+        return None
+
+    if cv2x_msg is None or not cv2x_msg.uper_data or cv2x_msg.uper_data[0:4] != '0013':
+        return None
+
+    try:
+        spat_msg_decoded = cv2x_msg.interpret_spat()
+    except Exception as e:
+        print(f"interpret_spat failed: {e}")
+        return None
+
+    if not spat_msg_decoded:
+        return None
+
+    spat_dict = spat_msg_decoded()
+    intersection_id = spat_dict['value'][1]['intersections'][0]['id']['id']
+    intersection_phases = spat_dict['value'][1]['intersections'][0]['states']
+
+    utc_time = time.gmtime()
+    utc_min = utc_time.tm_min
+    utc_sec = utc_time.tm_sec
+    utc_deci = int((time.time() % 1) * 10)
+    current_sec = utc_min * 60 + utc_sec
+
+    phases = []
+    for phase in intersection_phases:
+        try:
+            counter = 0
+            current_phase = int(phase.get('signalGroup'))
+            current_state = str(phase['state-time-speed'][counter]['eventState'])
+            min_end_time = phase['state-time-speed'][counter]['timing']['minEndTime']
+
+            time_end_sec = min_end_time / 10.0
+            time_end_sec_in_minute = time_end_sec % 60.0
+            absolute_end_sec = (utc_min * 60) + time_end_sec_in_minute
+            if absolute_end_sec <= current_sec:
+                absolute_end_sec += 60.0
+
+            countdown = writeTime(absolute_end_sec, current_sec, utc_deci)
+            countdown = max(0, countdown)
+
+            print(
+                f"Phase {current_phase}: state={current_state}, maxEndTime={min_end_time}ds "
+                f"({time_end_sec}s), abs_end={absolute_end_sec}s, current={current_sec}s, countdown={countdown:.1f}s"
+            )
+
+            phases.append({
+                'phase': current_phase,
+                'state': current_state,
+                'countdown': countdown,
+                'intersection_id': intersection_id,
+            })
+            counter += 1
+        except Exception as e:
+            print(f"Error processing phase {phase.get('signalGroup', 'unknown')}: {e}")
+            continue
+
+    return {'intersection_id': intersection_id, 'phases': phases}
+
+
 @app.route('/api/traffic_light_state', methods=['GET'])
 def traffic_light_state():
-    """Returns all traffic light phases using the same methodology as visualize_db_spats.py"""
-
+    """Return all decoded pcaps as `snapshots`, plus first pcap as `phases` for compatibility."""
     try:
         if CV2X_Message is None:
             return jsonify({'error': 'CV2X_Message not available'}), 500
-    
-        # Extract payloads from file (same as visualize_db_spats.py)
-        for pcap in decoded_pcaps:
 
-            payload = pcap
-            
-            if not payload:
-                return jsonify({
-                    'error': 'Payload invalid',
-                    'intersection_id': None,
-                    'phases': []
-                }), 404
-            
-            # Use the first payload (same as visualize_db_spats.py uses payloads[0])
-            pcap_data = payload if payload else None
-            
-            if not pcap_data or len(pcap_data) == 0:
-                return jsonify({
-                    'error': 'No valid payload data',
-                    'intersection_id': None,
-                    'phases': []
-                }), 404
-        
-        # Parse C-V2X pcap message (same as visualize_db_spats.py)
+        if not pcaps:
+            return jsonify({'error': 'No pcaps loaded', 'snapshots': []}), 404
 
-            cv2x_msg = CV2X_Message(pcap_data)
-            
-            if cv2x_msg is None or not cv2x_msg.uper_data or cv2x_msg.uper_data[0:4] != '0013':
-                return jsonify({
-                    'error': 'Invalid SPaT message',
-                    'intersection_id': None,
-                    'phases': []
-                }), 404
-                
-            # Decode SPaT message (same as visualize_db_spats.py)
-            try:
-                spat_msg_decoded = cv2x_msg.interpret_spat()
-            except Exception as e:
-                return jsonify({    
-                    'error': f'Error decoding SPaT: {str(e)}',
-                    'intersection_id': None,
-                    'phases': []              
-                }), 500
-            
-            if not spat_msg_decoded:
-                return jsonify({
-                    'error': 'Could not decode SPaT message',
-                    'intersection_id': None,
-                    'phases': []
-                }), 404
-        
-            # Get intersection data (same structure as visualize_db_spats.py)
-            spat_dict = spat_msg_decoded()
-            intersection_id = spat_dict['value'][1]['intersections'][0]['id']['id']
-            intersection_phases = spat_dict['value'][1]['intersections'][0]['states']
-            
-            # Get UTC time for countdown calculation (same as visualize_db_spats.py)
-            # Recalculate time on every request to ensure accurate countdown
-            utc_time = time.gmtime()
-            utc_min = utc_time.tm_min
-            utc_sec = utc_time.tm_sec
-            utc_deci = int((time.time() % 1) * 10)
-            current_sec = utc_min * 60 + utc_sec  # Seconds since start of hour
-            
-            # Extract all phases (same methodology as visualize_db_spats.py)
-            phases = []
-            for phase in intersection_phases:
-                try:
-                    counter = 0
-                    current_phase = int(phase.get('signalGroup'))
-                    current_state = str(phase['state-time-speed'][counter]['eventState'])
-                    
-                    # Get timing information - minEndTime is in deciseconds
-                    min_end_time = phase['state-time-speed'][counter]['timing']['minEndTime']
-                
-                    
-                    # Calculate countdown (EXACTLY as visualize_db_spats.py does it)
-                    # maxEndTime is in deciseconds, convert to seconds
-                    # In SPaT, maxEndTime represents seconds within the current UTC minute (0-60)
-                    # So we need to make it absolute by adding it to the start of the current minute
-                    time_end_sec = min_end_time / 10.0  # Convert deciseconds to seconds
-                    
-                    # Make it absolute: add to start of current minute
-                    # But wait - if time_end_sec is already > 60, it might wrap to next minute
-                    # Let's check: if time_end_sec > 60, subtract 60 to get seconds in current minute
-                    time_end_sec_in_minute = time_end_sec % 60.0
-                    
-                    # Convert to absolute seconds since start of hour
-                    absolute_end_sec = (utc_min * 60) + time_end_sec_in_minute
-                    
-                    # If the absolute end time is less than current time, it means it's in the next cycle (next minute)
-                    if absolute_end_sec <= current_sec:
-                        absolute_end_sec += 60.0  # Wrap to next minute
-                    
-                    # Calculate countdown using writeTime (same as visualize_db_spats.py)
-                    countdown = writeTime(absolute_end_sec, current_sec, utc_deci)
-                    
-                    # Ensure countdown is non-negative
-                    countdown = max(0, countdown)
+        snapshots = []
+        for i, pcap_data in enumerate(pcaps):
+            result = _phases_from_pcap_hex(pcap_data)
+            if not result or not result['phases']:
+                continue
+            snapshots.append({
+                'pcap_index': i,
+                'intersection_id': result['intersection_id'],
+                'phases': result['phases'],
+            })
 
-                    # Debug: print timing info
-                    print(f"Phase {current_phase}: state={current_state}, maxEndTime={min_end_time}ds ({time_end_sec}s), abs_end={absolute_end_sec}s, current={current_sec}s, countdown={countdown:.1f}s")
-                    
-                    phases.append({
-                        'phase': current_phase,
-                        'state': current_state,
-                        'countdown': countdown,
-                        'intersection_id': intersection_id
-                    })
-                    
-                    counter += 1
-                    print("Phase being looped: ", current_phase)
-
-                except Exception as e:
-                    print(f"Error processing phase {phase.get('signalGroup', 'unknown')}: {e}")
-                    continue
-            
+        if not snapshots:
             return jsonify({
-                'intersection_id': intersection_id,
-                'phases': phases
-            }), 200
-        
+                'error': 'No valid SPaT messages decoded from pcaps',
+                'snapshots': [],
+            }), 404
+
+        first = snapshots[0]
+        data_obj = {
+            str(s['pcap_index']): {
+                'intersection_id': s['intersection_id'],
+                'phases': s['phases'],
+            }
+            for s in snapshots
+        }
+
+        return jsonify({
+            'snapshots': snapshots,
+            'intersection_id': first['intersection_id'],
+            'phases': first['phases'],
+            'data': data_obj,
+        }), 200
+
     except Exception as e:
         print(f"Error in traffic_light_state endpoint: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/traffic_light_state/<int:pcap_index>', methods=['GET'])
+def traffic_light_state_by_index(pcap_index):
+    """Return phases for a single pcap by index into `pcaps[]`."""
+    try:
+        if CV2X_Message is None:
+            return jsonify({'error': 'CV2X_Message not available'}), 500
+
+        if pcap_index < 0 or pcap_index >= len(pcaps):
+            return jsonify({
+                'error': 'Invalid pcap index',
+                'intersection_id': None,
+                'phases': [],
+            }), 404
+
+        result = _phases_from_pcap_hex(pcaps[pcap_index])
+        if not result:
+            return jsonify({
+                'error': 'Could not decode SPaT for this pcap',
+                'intersection_id': None,
+                'phases': [],
+            }), 404
+
+        return jsonify({
+            'pcap_index': pcap_index,
+            'intersection_id': result['intersection_id'],
+            'phases': result['phases'],
+        }), 200
+
+    except Exception as e:
+        print(f"Error in traffic_light_state_by_index: {e}")
         return jsonify({'error': str(e)}), 500
 
 
