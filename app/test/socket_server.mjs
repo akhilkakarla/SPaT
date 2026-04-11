@@ -135,7 +135,7 @@ async function pollAndDecode() {
       console.error('✗ Error:', err.message);
     }
     
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
 }
 

@@ -194,40 +194,6 @@ def traffic_light_state():
         print(f"Error in traffic_light_state endpoint: {e}")
         return jsonify({'error': str(e)}), 500
 
-
-@app.route('/api/traffic_light_state/<int:pcap_index>', methods=['GET'])
-def traffic_light_state_by_index(pcap_index):
-    """Return phases for a single pcap by index into `pcaps[]`."""
-    try:
-        if CV2X_Message is None:
-            return jsonify({'error': 'CV2X_Message not available'}), 500
-
-        if pcap_index < 0 or pcap_index >= len(pcaps):
-            return jsonify({
-                'error': 'Invalid pcap index',
-                'intersection_id': None,
-                'phases': [],
-            }), 404
-
-        result = _phases_from_pcap_hex(pcaps[pcap_index])
-        if not result:
-            return jsonify({
-                'error': 'Could not decode SPaT for this pcap',
-                'intersection_id': None,
-                'phases': [],
-            }), 404
-
-        return jsonify({
-            'pcap_index': pcap_index,
-            'intersection_id': result['intersection_id'],
-            'phases': result['phases'],
-        }), 200
-
-    except Exception as e:
-        print(f"Error in traffic_light_state_by_index: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
 if __name__ == '__main__':
     #thread = threading.Thread(target=traffic_light_state, daemon=True)
     #thread.start()
