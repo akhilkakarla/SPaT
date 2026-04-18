@@ -10,7 +10,6 @@ const LATEST_PCAP_FILE = path.join(PCAP_DIR, 'latest.pcap');
 const PCAP_HISTORY_FILE = path.join(PCAP_DIR, 'pcap_history.json');
 
 const SPAT_URL = 'http://129.114.36.77:8080/spat';
-const DECODER_SCRIPT = '/Users/akhilkakarla/Desktop/SPaT/backend/decoder.py';
 const WS_PORT = 8765;
 
 // Create pcap directory if it doesn't exist
@@ -130,7 +129,7 @@ async function pollAndDecode() {
       const payload = data.spat || '00136E00382E4EEE997973CB8FA69DFB8000204000067A7028A82C00410D003BC07CC00408C8003000F801604800027001821A0020004A801010D0022C04AC430086001160080200A08C8003000C6006043400E001DA00D02180070001C10D000C401F0010086800F8022401C0430007C0';
       
       broadcastDecodedPcap(payload);
-      console.log('✓ Broadcasted and stored payload and raw PCAP');
+      console.log('✓ Broadcasted and stored payload and raw SpaT message');
     } catch (err) {
       console.error('✗ Error:', err.message);
     }
