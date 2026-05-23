@@ -23,6 +23,9 @@
 		},
 		{
 			"path": "../../../Gmail_Summarizer"
+		},
+		{
+			"path": "../../../FilePulse"
 		}
 	],
 	"settings": {},
