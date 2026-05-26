@@ -6,3 +6,10 @@ spat_interpreter/__pycache__/
 j2735_decoder/.j2735_decode/
 spat_interpreter/.spat_vis/
 data/.pcap_parser/
+
+# general
+.DS_Store
+app/
+intern_project.code-workspace
+live_API_app/
+spat_vis/node_modules
