@@ -251,7 +251,7 @@ export default function VisualizationScreen() {
               styles.menuButton
             }>
 
-            <Ionicons name = "home" size = {24} color="black"/>
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
 
         </TouchableOpacity>
 
