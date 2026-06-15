@@ -26,6 +26,10 @@ export default function VisualizationScreen() {
   const [isSideBarOpen, setIsSideBarVisible] = useState(false);
   const sidebarTranslateX = useRef(new Animated.Value(100)).current;
   const [error, setError] = useState<string | null>(null);
+  const [north, setNorthScreen] = useState<'none' | 'flex'>('none');
+  const [south, setSouthScreen] = useState<'none' | 'flex'>('none');
+  const [east, setEastScreen] = useState<'none' | 'flex'>('none');
+  const [west, setWestScreen] = useState<'none' | 'flex'>('none');
 
   const live_spat_api_url = 'http://129.114.36.77:8080/spat_decoded';
   const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
@@ -35,13 +39,6 @@ export default function VisualizationScreen() {
       if (!res.ok){
         throw new Error(`HTTP ${res.status}`);
       } 
-
-      /*
-      else {
-        res = await fetch(backup_url);
-        if(!res.ok) throw new Error(`HTTP ${res.status}`)
-      }
-    */
 
       const data = await res.json();
       const movementStates = data?.states?.MovementState;
@@ -142,6 +139,122 @@ export default function VisualizationScreen() {
     }).start(() => setIsSideBarVisible(false));
   };
 
+  const showNorthScreen = () => {
+    setNorthScreen('flex');
+  };
+
+  const showSouthScreen = () => {
+    setSouthScreen('flex');
+  };
+
+  const showEastScreen = () => {
+    setEastScreen('flex');
+  };
+
+  const showWestScreen = () => {
+    setWestScreen('flex');
+  };
+
+  const returnNorthPhases = (phases: ParsedPhase[]) => {
+    const northSignalGroups = [1, 2, 22];
+    const newPhases = phases.filter((phase) => phase.phase !== null && northSignalGroups.includes(phase.phase));
+    return newPhases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+        ))
+  };
+
+  const returnSouthPhases = (phases: ParsedPhase[]) => {
+    const eastSignalGroups = [3, 4, 34];
+    const newPhases = phases.filter((phase) => phase.phase !== null && eastSignalGroups.includes(phase.phase));
+    return newPhases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+        ))
+  };
+
+  const returnEastPhases = (phases: ParsedPhase[]) => {
+    const eastSignalGroups = [3, 4, 34];
+    const newPhases = phases.filter((phase) => phase.phase !== null && eastSignalGroups.includes(phase.phase));
+    return newPhases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+        ))
+  };
+
+  const returnWestPhases = (phases: ParsedPhase[]) => {
+    const eastSignalGroups = [3, 4, 34];
+    const newPhases = phases.filter((phase) => phase.phase !== null && eastSignalGroups.includes(phase.phase));
+    return newPhases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+        ))
+  };
+
   const renderSidebar = () => {
     return (
       <Modal visible = {isSideBarOpen} transparent animationType = 'none'>
@@ -157,20 +270,24 @@ export default function VisualizationScreen() {
             <Ionicons name = "close" size = {20} color="white"/>
           </TouchableOpacity>
 
-          <TouchableOpacity style = {styles.sideBarOption}>
-            <Text style = {styles.sideBarOptionsText}>North</Text>
+          <TouchableOpacity onPress={showNorthScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>North</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style = {styles.sideBarOption}>
-            <Text style = {styles.sideBarOptionsText}>South</Text>
+          <TouchableOpacity onPress={showSouthScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>South</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style = {styles.sideBarOption}>
-            <Text style = {styles.sideBarOptionsText}>East</Text>
+          <TouchableOpacity onPress={showEastScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>East</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style = {styles.sideBarOption}>
-            <Text style = {styles.sideBarOptionsText}>West</Text>
+          <TouchableOpacity onPress={showWestScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>West</Text>
           </TouchableOpacity>
 
         </Animated.View>
@@ -240,16 +357,15 @@ export default function VisualizationScreen() {
   }
 
   return (
-    <View style = {{flex: 1, backgroundColor:'rgba(95, 202, 255, 0.8)'}}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
+    <View style={styles.screenBackground}>
+      <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
 
         <TouchableOpacity onPress = {openSideBar}
-            style = {
-              styles.menuButton
-            }>
+            style = {styles.menuButton}>
 
             <Ionicons name = "menu-outline" size = {24} color="black"/>
 
@@ -278,7 +394,7 @@ export default function VisualizationScreen() {
 
           return (
             <View>
-                <View style = {{backgroundColor: 'rgba(95, 202, 255, 0.8)'}}>
+                <View>
                   <TrafficLight
                     state={displayedState}
                     countdown={countdownToDisplay}
@@ -295,7 +411,7 @@ export default function VisualizationScreen() {
                     <TouchableOpacity
                       key={index}
                       style={{
-                        backgroundColor: '#5596ea',
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
                         alignItems: 'center',
                         justifyContent: 'center',
                         margin: 10,
@@ -306,7 +422,7 @@ export default function VisualizationScreen() {
                         setSignalPhase(index)
                       }}
                     >
-                      <Text style={{color: 'black', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
                         Phase {index + 1}
                       </Text>
                     </TouchableOpacity>
@@ -323,13 +439,351 @@ export default function VisualizationScreen() {
             <Text style={styles.error}>Error: {error}</Text>
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </View>
+
+
+
+
+
+
+        <View style = {{display: north}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {returnNorthPhases(phases)}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: south}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {phases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: east}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {phases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: west}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {phases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {index + 1}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+        </ScrollView>
+      </View>
+        </View>
+        
     </View>
 
   );
 }
 
 const styles = StyleSheet.create({
+  screenBackground: {
+    flex: 1,
+    backgroundColor: '#071427',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -337,73 +791,81 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   scrollContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
+    paddingBottom: 48,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 12,
     textAlign: 'center',
-    color: '#333',
+    color: '#ffffff',
+    letterSpacing: 0.2,
   },
   messageNavContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
     padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    backgroundColor: 'transparent',
+    borderRadius: 14,
     alignItems: 'center' as const,
   },
+
   messageCounter: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#dbe9ff',
     alignItems: 'flex-end',
   },
+
   messageCounterText: {
-    color: 'black',
-    fontSize: 18,
-    fontWeight: 'bold',
-    margin: 10,
+    color: '#dbe9ff',
+    fontSize: 16,
+    fontWeight: '700',
+    margin: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginTop: 24,
     marginBottom: 12,
-    color: '#333',
+    color: '#ffffff',
   },
   messageCard: {
-    marginBottom: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    marginBottom: 14,
+    padding: 16,
+    borderWidth: 0,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    backdropFilter: 'blur(8px)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 8,
   },
   messageId: {
     fontWeight: '700',
     marginBottom: 6,
-    color: '#333',
+    color: '#e6f0ff',
   },
   messageXml: {
     fontFamily: 'monospace',
     fontSize: 11,
-    color: '#666',
+    color: '#9fb0c8',
   },
   error: {
-    color: '#d32f2f',
+    color: '#ff8b94',
     fontSize: 14,
   },
   errorContainer: {
-    backgroundColor: '#ffebee',
+    backgroundColor: 'rgba(255, 59, 48, 0.06)',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginVertical: 12,
   },
   noData: {
-    color: '#999',
+    color: '#9aa4b2',
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
@@ -411,28 +873,42 @@ const styles = StyleSheet.create({
 
   menuButton: {
     position: 'absolute',
-    left: 10,
-    top: 5,
-    color: 'black',
+    left: 14,
+    top: 12,
+    color: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 30,
-    width: 30,
+    height: 40,
+    width: 40,
+    borderRadius: 12,
+    backgroundColor: '#ffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
   },
 
   sideBar: {
-    backgroundColor: '#5596ea',
+    backgroundColor: 'black',
     position: 'absolute',
     left: 0,
-    width: deviceWidth * 0.22,
+    width: Math.min(deviceWidth * 0.72, 340),
     height: deviceHeight,
-    padding: 16,
-    paddingTop: 28,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 12,
+    padding: 20,
+    paddingTop: 36,
+    elevation: 18,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
+  glassWrapper: {
+    flex: 1,
+    margin: 12,
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
   },
 
   sideBarCloseButton: {
@@ -442,16 +918,20 @@ const styles = StyleSheet.create({
   },
 
   sideBarOption: {
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(126, 153, 235, 0.65)',
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
 
   sideBarOptionsText: {
-    color: '#ffffff',
+    color: '#eaf4ff',
     fontSize: 18,
     fontWeight: '700',
+    marginLeft: 10,
   },
 });
