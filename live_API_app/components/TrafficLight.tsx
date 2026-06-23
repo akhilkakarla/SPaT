@@ -7,9 +7,10 @@ type TrafficLightProps = {
   state: TrafficLightState;
   countdown: number | null;
   intersectionId: number | null;
+  signalGroup: number | null;
 };
 
-export default function TrafficLight({ state, countdown, intersectionId }: TrafficLightProps) {
+export default function TrafficLight({ state, countdown, intersectionId, signalGroup}: TrafficLightProps) {
   const getLightColors = () => {
     switch (state) {
       case 'stop-And-Remain':
@@ -65,6 +66,10 @@ export default function TrafficLight({ state, countdown, intersectionId }: Traff
       {!state && (
         <Text style={styles.noDataText}>No traffic light data available</Text>
       )}
+
+      <View style = {styles.signalGroupLabel}>
+        <Text style = {styles.signalGroupLabelText}>Signal Group {signalGroup}</Text>
+      </View>
     </View>
   );
 }
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 12,
     margin: 16,
   },
@@ -82,7 +87,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
-    color: '#333',
+    color: '#ffff',
   },
   lightContainer: {
     flexDirection: 'row',
@@ -125,7 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 20,
-    color: '#333',
+    color: '#ffff',
     textTransform: 'uppercase',
   },
   noDataText: {
@@ -133,6 +138,20 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 20,
     fontStyle: 'italic',
+  },
+  signalGroupLabel: {
+    backgroundColor: 'rgba(126, 153, 235, 0.65)',
+    borderRadius: 5,
+    width: 180,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  signalGroupLabelText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
 
