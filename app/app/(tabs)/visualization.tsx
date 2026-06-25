@@ -1,6 +1,10 @@
 import TrafficLight from '@/components/TrafficLight';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Dimensions, Modal, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+
+const deviceHeight = Dimensions.get('window').height;
+const deviceWidth = Dimensions.get('window').width;
 
 type LightState = 'stop-And-Remain' | 'protected-clearance' | 'protected-Movement-Allowed' | null;
 
@@ -19,13 +23,23 @@ export default function VisualizationScreen() {
   const [topIntersectionId, setTopIntersectionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isSideBarOpen, setIsSideBarVisible] = useState(false);
+  const sidebarTranslateX = useRef(new Animated.Value(100)).current;
   const [error, setError] = useState<string | null>(null);
+  const [home, setHomeScreen] = useState<'none' | 'flex'>('flex');
+  const [north, setNorthScreen] = useState<'none' | 'flex'>('none');
+  const [south, setSouthScreen] = useState<'none' | 'flex'>('none');
+  const [east, setEastScreen] = useState<'none' | 'flex'>('none');
+  const [west, setWestScreen] = useState<'none' | 'flex'>('none');
 
   const live_spat_api_url = 'http://129.114.36.77:8080/spat_decoded';
+  const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
   const fetchLiveSpat = async () => {
     try {
-      const res = await fetch(live_spat_api_url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      var res = await fetch(live_spat_api_url);
+      if (!res.ok){
+        throw new Error(`HTTP ${res.status}`);
+      } 
 
       const data = await res.json();
       const movementStates = data?.states?.MovementState;
@@ -108,6 +122,269 @@ export default function VisualizationScreen() {
     // Keep isFrozen state unchanged during refresh
   };
 
+  const openSideBar = () => {
+    setIsSideBarVisible(true)
+    Animated.timing(sidebarTranslateX, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeSideBar = () => {
+    setIsSideBarVisible(false)
+    Animated.timing(sidebarTranslateX, {
+      toValue: 100,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => setIsSideBarVisible(false));
+  };
+
+  const showHomeScreen = () => {
+    setHomeScreen('flex');
+    setNorthScreen('none');
+    setSouthScreen('none');
+    setEastScreen('none');
+    setWestScreen('none');
+  };
+
+  const showNorthScreen = () => {
+    setHomeScreen('none');
+    setNorthScreen('flex');
+    setSouthScreen('none');
+    setEastScreen('none');
+    setWestScreen('none');
+  };
+
+  const showSouthScreen = () => {
+    setHomeScreen('none');
+    setNorthScreen('none');
+    setSouthScreen('flex');
+    setEastScreen('none');
+    setWestScreen('none');
+  };
+
+  const showEastScreen = () => {
+    setHomeScreen('none');
+    setNorthScreen('none');
+    setSouthScreen('none');
+    setEastScreen('flex');
+    setWestScreen('none');
+  };
+
+  const showWestScreen = () => {
+    setHomeScreen('none');
+    setNorthScreen('none');
+    setSouthScreen('none');
+    setEastScreen('none');
+    setWestScreen('flex');
+  };
+
+  const returnNorthPhases = () => {
+    const northSignalGroups = [1, 2, 22];
+    const northPhases = phases.filter(
+      (phase) => phase.phase !== null && northSignalGroups.includes(phase.phase),
+    );
+    return northPhases.length > 0 ? (
+      <View>
+        {northPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+          <TouchableOpacity
+            key={actualIndex}
+            style={{
+              backgroundColor: 'rgba(126, 153, 235, 0.65)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 10,
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={() => setPhaseIndex(actualIndex)}
+          >
+            <Text 
+              style={{
+                color: '#ffff',
+                fontSize: 20,
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
+              Signal Group {phase.phase}
+            </Text>
+          </TouchableOpacity>
+        );
+        })}
+      </View>
+    ) : (
+      <Text style={styles.noData}>No north phases available</Text>
+    );
+  };
+
+  const returnSouthPhases = () => {
+    const southSignalGroups = [5, 6, 26];
+    const southPhases = phases.filter(
+      (phase) => phase.phase !== null && southSignalGroups.includes(phase.phase),
+    );
+    return southPhases.length > 0 ? (
+      <View>
+        {southPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+          <TouchableOpacity
+            key={actualIndex}
+            style={{
+              backgroundColor: 'rgba(126, 153, 235, 0.65)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 10,
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={() => setPhaseIndex(actualIndex)}
+          >
+            <Text 
+              style={{
+                color: '#ffff',
+                fontSize: 20,
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
+              Signal Group {phase.phase}
+            </Text>
+          </TouchableOpacity>
+        );
+        })}
+      </View>
+    ) : (
+      <Text style={styles.noData}>No south phases available</Text>
+    );
+  };
+
+  const returnEastPhases = () => {
+    const eastSignalGroups = [3, 4, 24];
+    const eastPhases = phases.filter(
+      (phase) => phase.phase !== null && eastSignalGroups.includes(phase.phase),
+    );
+    return eastPhases.length > 0 ? (
+      <View>
+        {eastPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+          <TouchableOpacity
+            key={actualIndex}
+            style={{
+              backgroundColor: 'rgba(126, 153, 235, 0.65)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 10,
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={() => setPhaseIndex(actualIndex)}
+          >
+            <Text 
+              style={{
+                color: '#ffff',
+                fontSize: 20,
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
+              Signal Group {phase.phase}
+            </Text>
+          </TouchableOpacity>
+        );
+        })}
+      </View>
+    ) : (
+      <Text style={styles.noData}>No east phases available</Text>
+    );
+  };
+
+  const returnWestPhases = () => {
+    const westSignalGroups = [7, 8, 28];
+    const westPhases = phases.filter(
+      (phase) => phase.phase !== null && westSignalGroups.includes(phase.phase),
+    );
+    return westPhases.length > 0 ? (
+      <View>
+        {westPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+          <TouchableOpacity
+            key={actualIndex}
+            style={{
+              backgroundColor: 'rgba(126, 153, 235, 0.65)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: 10,
+              padding: 10,
+              borderRadius: 8,
+            }}
+            onPress={() => setPhaseIndex(actualIndex)}
+          >
+            <Text 
+              style={{
+                color: '#ffff',
+                fontSize: 20,
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}>
+              Signal Group {phase.phase}
+            </Text>
+          </TouchableOpacity>
+        );
+        })}
+      </View>
+    ) : (
+      <Text style={styles.noData}>No west phases available</Text>
+    );
+  };
+
+  const renderSidebar = () => {
+    return (
+      <Modal visible = {isSideBarOpen} transparent animationType = 'none'>
+        <TouchableWithoutFeedback onPress = {closeSideBar}>
+          <View style = {{flex: 1}}></View>
+        </TouchableWithoutFeedback>
+
+        <Animated.View
+          style = {[styles.sideBar, {transform: [{translateX: sidebarTranslateX}]}]}>
+
+          <TouchableOpacity onPress = {closeSideBar}
+            style = {styles.sideBarCloseButton}> 
+            <Ionicons name = "close" size = {20} color="white"/>
+          </TouchableOpacity>
+          
+          <TouchableOpacity onPress={showHomeScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>Home</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={showNorthScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>North</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={showSouthScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>South</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={showEastScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>East</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={showWestScreen}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>West</Text>
+          </TouchableOpacity>
+
+        </Animated.View>
+      </Modal>
+    )
+  }
+
   const setSignalPhase = (phase: number) => {
     // Display selected phase and freeze automatic switching
     setPhaseIndex(phase);
@@ -170,77 +447,398 @@ export default function VisualizationScreen() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContainer}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-      {phases.length > 0 && (
-        <Text style={styles.messageCounter}>
-          Showing phase {phaseIndex + 1} of {phases.length}
-        </Text>
-      )}
+    <View style={styles.screenBackground}>
+      <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
 
-      <Text style = {styles.messageCounter}>
-          Total Phases: {phases.length}
-      </Text>
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
 
-      {(() => {
-        const displayed = phases && phases.length ? phases[phaseIndex] : null;
-        const displayedState = displayed?.state || null;
-        const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-        const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
 
-        return (
-          <View>
-            <TrafficLight
-              state={displayedState}
-              countdown={countdownToDisplay}
-              intersectionId={displayedIntersection}
-            />
-            {displayed?.phase !== null && (
-              <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-            )}
+        </TouchableOpacity>
 
-            {phases.length > 0 && (
-              <View>
-                {phases.map((phase, index) => (
-                  <TouchableHighlight
-                    key={index}
-                    style={{
-                      backgroundColor: 'lightblue',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: 10,
-                      padding: 10,
-                      borderRadius: 8,
-                    }}
-                    onPress={() => {
-                      setSignalPhase(index)
-                    }}
-                  >
-                    <Text style={{color: 'black', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
-                      Phase {index + 1}
-                    </Text>
-                  </TouchableHighlight>
-                ))}
-              </View>
-            )}
-          </View>
+        {renderSidebar()}
 
-        );
-      })()}
-
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.error}>Error: {error}</Text>
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
         </View>
-      )}
-    </ScrollView>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                    signalGroup={displayed?.phase ?? null}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {phases.map((phase, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={{
+                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: 10,
+                        padding: 10,
+                        borderRadius: 8,
+                      }}
+                      onPress={() => {
+                        setSignalPhase(index)
+                      }}
+                    >
+                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
+                        Phase {phase.phase}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+        </ScrollView>
+      </View>
+
+
+
+
+
+
+        <View style = {{display: north}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                    signalGroup={displayed?.phase ?? null}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {returnNorthPhases()}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: south}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                    signalGroup={displayed?.phase ?? null}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {returnSouthPhases()}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: east}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                    signalGroup={displayed?.phase ?? null}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {returnEastPhases()}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
+
+        </ScrollView>
+      </View>
+        </View>
+
+
+
+        <View style = {{display: west}}>
+          <View style={styles.glassWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "menu-outline" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
+        {renderSidebar()}
+
+        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+        <View style = {styles.messageCounter}>
+          {phases.length > 0 && (
+            <Text style={styles.messageCounterText}>
+              Showing phase {phaseIndex + 1} of {phases.length}
+            </Text>
+          )}
+            <Text style = {styles.messageCounterText}>
+                Total Phases: {phases.length}
+            </Text>
+        </View>
+          
+
+        {(() => {
+          const displayed = phases && phases.length ? phases[phaseIndex] : null;
+          const displayedState = displayed?.state || null;
+          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+
+          return (
+            <View>
+                <View>
+                  <TrafficLight
+                    state={displayedState}
+                    countdown={countdownToDisplay}
+                    intersectionId={displayedIntersection}
+                    signalGroup={displayed?.phase ?? null}
+                  />
+                </View>
+              {displayed?.phase !== null && (
+                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
+              )}
+
+              {phases.length > 0 && (
+                <View>
+                  {returnWestPhases()}
+                </View>
+              )}
+            </View>
+
+          );
+        })()}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.error}>Error: {error}</Text>
+          </View>
+        )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
+        </ScrollView>
+      </View>
+        </View>
+        
+    </View>
+
   );
 }
 
 const styles = StyleSheet.create({
+  screenBackground: {
+    flex: 1,
+    backgroundColor: '#071427',
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -248,68 +846,151 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   scrollContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
+    paddingBottom: 48,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 12,
     textAlign: 'center',
-    color: '#333',
+    color: '#ffffff',
+    letterSpacing: 0.2,
   },
   messageNavContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
     padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    backgroundColor: 'transparent',
+    borderRadius: 14,
     alignItems: 'center' as const,
   },
+
   messageCounter: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#dbe9ff',
+    alignItems: 'flex-end',
+  },
+
+  messageCounterText: {
+    color: '#dbe9ff',
+    fontSize: 16,
+    fontWeight: '700',
+    margin: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginTop: 24,
     marginBottom: 12,
-    color: '#333',
+    color: '#ffffff',
   },
   messageCard: {
-    marginBottom: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    marginBottom: 14,
+    padding: 16,
+    borderWidth: 0,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    backdropFilter: 'blur(8px)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 8,
   },
   messageId: {
     fontWeight: '700',
     marginBottom: 6,
-    color: '#333',
+    color: '#e6f0ff',
   },
   messageXml: {
     fontFamily: 'monospace',
     fontSize: 11,
-    color: '#666',
+    color: '#9fb0c8',
   },
   error: {
-    color: '#d32f2f',
+    color: '#ff8b94',
     fontSize: 14,
   },
   errorContainer: {
-    backgroundColor: '#ffebee',
+    backgroundColor: 'rgba(255, 59, 48, 0.06)',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginVertical: 12,
   },
   noData: {
-    color: '#999',
+    color: '#9aa4b2',
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
+  },
+
+  menuButton: {
+    position: 'absolute',
+    left: 14,
+    top: 12,
+    color: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 12,
+    backgroundColor: '#ffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+
+  sideBar: {
+    backgroundColor: 'black',
+    position: 'absolute',
+    left: 0,
+    width: Math.min(deviceWidth * 0.72, 340),
+    height: deviceHeight,
+    padding: 20,
+    paddingTop: 36,
+    elevation: 18,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+
+  glassWrapper: {
+    flex: 1,
+    margin: 12,
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+
+  sideBarCloseButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+    padding: 8,
+  },
+
+  sideBarOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(126, 153, 235, 0.65)',
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+
+  sideBarOptionsText: {
+    color: '#eaf4ff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 10,
+  },
+
+  extraSpacing: {
+    marginTop: 20,
   },
 });
