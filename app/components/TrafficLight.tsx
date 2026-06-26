@@ -1,5 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions} from 'react-native';
+
+const deviceWidth = Dimensions.get('window').width;
+const deviceHeight = Dimensions.get('window').height;
 
 type TrafficLightState = 'stop-And-Remain' | 'protected-clearance' | 'protected-Movement-Allowed' | null;
 
