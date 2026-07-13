@@ -180,6 +180,7 @@ export default function VisualizationScreen() {
     setWestScreen('flex');
   };
 
+  {/*
   const returnNorthPhases = () => {
     const northSignalGroups = [1, 2, 22];
     const northPhases = phases.filter(
@@ -187,9 +188,11 @@ export default function VisualizationScreen() {
     );
     return northPhases.length > 0 ? (
       <View>
-        {northPhases.map((phase, index) => (
+        {northPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
           <TouchableOpacity
-            key={index}
+            key={actualIndex}
             style={{
               backgroundColor: 'rgba(126, 153, 235, 0.65)',
               alignItems: 'center',
@@ -198,7 +201,7 @@ export default function VisualizationScreen() {
               padding: 10,
               borderRadius: 8,
             }}
-            onPress={() => setPhaseIndex(index)}
+            onPress={() => setPhaseIndex(actualIndex)}
           >
             <Text 
               style={{
@@ -210,8 +213,41 @@ export default function VisualizationScreen() {
               Signal Group {phase.phase}
             </Text>
           </TouchableOpacity>
-        ))}
+        );
+        })}
       </View>
+    ) : (
+      <Text style={styles.noData}>No north phases available</Text>
+    );
+  };
+*/}
+
+  const returnNorthPhases = () => {
+    const northSignalGroups = [1, 2, 22];
+    const northPhases = phases.filter(
+      (phase) => phase.phase !== null && northSignalGroups.includes(phase.phase),
+    );
+
+    return northPhases.length > 0 ? (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator
+        contentContainerStyle={styles.directionPhasesRow}
+      >
+        {northPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+            <View key={actualIndex} style={styles.directionPhaseItem}>
+              <TrafficLight
+                state={phase.state}
+                countdown={phase.countdown}
+                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                signalGroup={phase.phase}
+              />
+            </View>
+          );
+        })}
+      </ScrollView>
     ) : (
       <Text style={styles.noData}>No north phases available</Text>
     );
@@ -222,35 +258,29 @@ export default function VisualizationScreen() {
     const southPhases = phases.filter(
       (phase) => phase.phase !== null && southSignalGroups.includes(phase.phase),
     );
+
     return southPhases.length > 0 ? (
-      <View>
-        {southPhases.map((phase, index) => (
-          <TouchableOpacity
-            key={index}
-            style={{
-              backgroundColor: 'rgba(126, 153, 235, 0.65)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: 10,
-              padding: 10,
-              borderRadius: 8,
-            }}
-            onPress={() => setPhaseIndex(index)}
-          >
-            <Text 
-              style={{
-                color: '#ffff',
-                fontSize: 20,
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}>
-              Signal Group {phase.phase}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator
+        contentContainerStyle={styles.directionPhasesRow}
+      >
+        {southPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+            <View key={actualIndex} style={styles.directionPhaseItem}>
+              <TrafficLight
+                state={phase.state}
+                countdown={phase.countdown}
+                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                signalGroup={phase.phase}
+              />
+            </View>
+          );
+        })}
+      </ScrollView>
     ) : (
-      <Text style={styles.noData}>No south phases available</Text>
+      <Text style={styles.noData}>No north phases available</Text>
     );
   };
 
@@ -259,35 +289,29 @@ export default function VisualizationScreen() {
     const eastPhases = phases.filter(
       (phase) => phase.phase !== null && eastSignalGroups.includes(phase.phase),
     );
+
     return eastPhases.length > 0 ? (
-      <View>
-        {eastPhases.map((phase, index) => (
-          <TouchableOpacity
-            key={index}
-            style={{
-              backgroundColor: 'rgba(126, 153, 235, 0.65)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: 10,
-              padding: 10,
-              borderRadius: 8,
-            }}
-            onPress={() => setPhaseIndex(index)}
-          >
-            <Text 
-              style={{
-                color: '#ffff',
-                fontSize: 20,
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}>
-              Signal Group {phase.phase}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator
+        contentContainerStyle={styles.directionPhasesRow}
+      >
+        {eastPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+            <View key={actualIndex} style={styles.directionPhaseItem}>
+              <TrafficLight
+                state={phase.state}
+                countdown={phase.countdown}
+                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                signalGroup={phase.phase}
+              />
+            </View>
+          );
+        })}
+      </ScrollView>
     ) : (
-      <Text style={styles.noData}>No east phases available</Text>
+      <Text style={styles.noData}>No north phases available</Text>
     );
   };
 
@@ -296,35 +320,29 @@ export default function VisualizationScreen() {
     const westPhases = phases.filter(
       (phase) => phase.phase !== null && westSignalGroups.includes(phase.phase),
     );
+
     return westPhases.length > 0 ? (
-      <View>
-        {westPhases.map((phase, index) => (
-          <TouchableOpacity
-            key={index}
-            style={{
-              backgroundColor: 'rgba(126, 153, 235, 0.65)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: 10,
-              padding: 10,
-              borderRadius: 8,
-            }}
-            onPress={() => setPhaseIndex(index)}
-          >
-            <Text 
-              style={{
-                color: '#ffff',
-                fontSize: 20,
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}>
-              Signal Group {phase.phase}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator
+        contentContainerStyle={styles.directionPhasesRow}
+      >
+        {westPhases.map((phase) => {
+          const actualIndex = phases.indexOf(phase);
+          return (
+            <View key={actualIndex} style={styles.directionPhaseItem}>
+              <TrafficLight
+                state={phase.state}
+                countdown={phase.countdown}
+                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                signalGroup={phase.phase}
+              />
+            </View>
+          );
+        })}
+      </ScrollView>
     ) : (
-      <Text style={styles.noData}>No west phases available</Text>
+      <Text style={styles.noData}>No north phases available</Text>
     );
   };
 
@@ -436,6 +454,7 @@ export default function VisualizationScreen() {
 
   return (
     <View style={styles.screenBackground}>
+      <View style={{ display: home, flex: 1 }}>
       <View style={styles.glassWrapper}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -520,13 +539,14 @@ export default function VisualizationScreen() {
         )}
         </ScrollView>
       </View>
+      </View>
 
 
 
 
 
 
-        <View style = {{display: north}}>
+        <View style={{ display: north, flex: 1 }}>
           <View style={styles.glassWrapper}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -563,18 +583,6 @@ export default function VisualizationScreen() {
 
           return (
             <View>
-                <View>
-                  <TrafficLight
-                    state={displayedState}
-                    countdown={countdownToDisplay}
-                    intersectionId={displayedIntersection}
-                    signalGroup={displayed?.phase ?? null}
-                  />
-                </View>
-              {displayed?.phase !== null && (
-                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-              )}
-
               {returnNorthPhases()}
             </View>
 
@@ -586,13 +594,20 @@ export default function VisualizationScreen() {
             <Text style={styles.error}>Error: {error}</Text>
           </View>
         )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
         </ScrollView>
       </View>
         </View>
 
 
 
-        <View style = {{display: south}}>
+
+
+
+        <View style={{ display: south, flex: 1 }}>
           <View style={styles.glassWrapper}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -629,23 +644,7 @@ export default function VisualizationScreen() {
 
           return (
             <View>
-                <View>
-                  <TrafficLight
-                    state={displayedState}
-                    countdown={countdownToDisplay}
-                    intersectionId={displayedIntersection}
-                    signalGroup={displayed?.phase ?? null}
-                  />
-                </View>
-              {displayed?.phase !== null && (
-                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-              )}
-
-              {phases.length > 0 && (
-                <View>
-                  {returnSouthPhases()}
-                </View>
-              )}
+              {returnSouthPhases()}
             </View>
 
           );
@@ -656,13 +655,22 @@ export default function VisualizationScreen() {
             <Text style={styles.error}>Error: {error}</Text>
           </View>
         )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
         </ScrollView>
       </View>
         </View>
 
 
 
-        <View style = {{display: east}}>
+
+
+
+
+
+        <View style={{ display: east, flex: 1 }}>
           <View style={styles.glassWrapper}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -699,23 +707,7 @@ export default function VisualizationScreen() {
 
           return (
             <View>
-                <View>
-                  <TrafficLight
-                    state={displayedState}
-                    countdown={countdownToDisplay}
-                    intersectionId={displayedIntersection}
-                    signalGroup={displayed?.phase ?? null}
-                  />
-                </View>
-              {displayed?.phase !== null && (
-                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-              )}
-
-              {phases.length > 0 && (
-                <View>
-                  {returnEastPhases()}
-                </View>
-              )}
+              {returnEastPhases()}
             </View>
 
           );
@@ -726,13 +718,23 @@ export default function VisualizationScreen() {
             <Text style={styles.error}>Error: {error}</Text>
           </View>
         )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
+
         </ScrollView>
       </View>
         </View>
 
 
 
-        <View style = {{display: west}}>
+
+
+
+
+
+        <View style={{ display: west, flex: 1 }}>
           <View style={styles.glassWrapper}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
@@ -769,23 +771,7 @@ export default function VisualizationScreen() {
 
           return (
             <View>
-                <View>
-                  <TrafficLight
-                    state={displayedState}
-                    countdown={countdownToDisplay}
-                    intersectionId={displayedIntersection}
-                    signalGroup={displayed?.phase ?? null}
-                  />
-                </View>
-              {displayed?.phase !== null && (
-                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-              )}
-
-              {phases.length > 0 && (
-                <View>
-                  {returnWestPhases()}
-                </View>
-              )}
+              {returnWestPhases()}
             </View>
 
           );
@@ -796,6 +782,10 @@ export default function VisualizationScreen() {
             <Text style={styles.error}>Error: {error}</Text>
           </View>
         )}
+
+        <View style = {styles.extraSpacing}>
+
+        </View>
         </ScrollView>
       </View>
         </View>
@@ -896,6 +886,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
+  directionPhasesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    margin: 20,
+  },
+  directionPhaseItem: {
+    width: deviceWidth * 0.3,
+  },
 
   menuButton: {
     position: 'absolute',
@@ -959,5 +958,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 10,
+  },
+
+  extraSpacing: {
+    marginTop: 20,
   },
 });

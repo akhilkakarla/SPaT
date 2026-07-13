@@ -7,9 +7,6 @@
 			"path": "../.."
 		},
 		{
-			"path": "../../../SPaT_App_LiveSPaTAPI"
-		},
-		{
 			"path": "../../../filepulse"
 		},
 		{
@@ -17,6 +14,9 @@
 		},
 		{
 			"path": "../../../aidashboard"
+		},
+		{
+			"path": "../../../SPaT_App_LiveSPaTAPI"
 		}
 	],
 	"settings": {},
