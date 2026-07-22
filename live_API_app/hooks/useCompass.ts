@@ -1,4 +1,4 @@
-import { Magnetometer } from 'expo-sensors';
+import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
 
 export type CardinalDirection = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
@@ -16,45 +16,53 @@ function getDirection(degrees: number): CardinalDirection {
 }
 
 export function useCompass() {
-  const [heading, setHeading] = useState(0);
+  const [heading, setHeading] = useState<number>(0);
   const [direction, setDirection] = useState<CardinalDirection>('N');
+  const [isAvailable, setIsAvailable] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let subscription: any;
+    let subscription: Location.LocationSubscription | null = null;
+    let isActive = true;
 
-    try {
-      // Set the update interval for the sensor
-      Magnetometer.setUpdateInterval(100);
+    async function setupCompass(): Promise<void> {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (!isActive) return;
 
-      // Check if addListener exists and is a function
-      if (Magnetometer.addListener && typeof Magnetometer.addListener === 'function') {
-        subscription = Magnetometer.addListener(({ x, y }: { x: number; y: number }) => {
-          // Calculate heading from magnetometer x/y values
-          let angle = Math.atan2(y, x) * (180 / Math.PI);
-          // Adjust so 0 = North (convert from math angle to compass heading)
-          let compass = (90 - angle) % 360;
-          if (compass < 0) compass += 360;
+        if (status !== 'granted') {
+          setError('Location permission denied');
+          setIsAvailable(false);
+          return;
+        }
 
-          setHeading(Math.round(compass));
-          setDirection(getDirection(compass));
+        subscription = await Location.watchHeadingAsync((headingData) => {
+          if (!isActive) return;
+
+          const degrees = Math.round(headingData.trueHeading);
+          setHeading(degrees);
+          setDirection(getDirection(degrees));
         });
-      } else {
-        console.warn('Magnetometer.addListener is not available');
+      } catch (err) {
+        console.error('Error setting up compass:', err);
+        if (isActive) {
+          setError('Compass unavailable on this device');
+          setIsAvailable(false);
+        }
       }
-    } catch (error) {
-      console.error('Error setting up compass listener:', error);
     }
 
-    return () => {
+    setupCompass();
+
+    return (): void => {
+      isActive = false;
       try {
-        if (subscription && typeof subscription.remove === 'function') {
-          subscription.remove();
-        }
-      } catch (error) {
-        console.error('Error removing compass listener:', error);
+        subscription?.remove();
+      } catch (err) {
+        console.error('Error removing compass listener:', err);
       }
     };
   }, []);
 
-  return { heading, direction };
+  return { heading, direction, isAvailable, error };
 }
