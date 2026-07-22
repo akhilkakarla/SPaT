@@ -1,6 +1,7 @@
 import TrafficLight from '@/components/TrafficLight';
+import { useCompass, type CardinalDirection } from '@/hooks/useCompass';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Dimensions, Modal, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const deviceHeight = Dimensions.get('window').height;
@@ -17,7 +18,6 @@ type ParsedPhase = {
 
 export default function VisualizationScreen() {
   const [phases, setPhases] = useState<ParsedPhase[]>([]);
-  const [phase, setPhase] = useState<ParsedPhase[]>([]);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [displayedCountdown, setDisplayedCountdown] = useState<number | null>(null);
   const [topIntersectionId, setTopIntersectionId] = useState<number | null>(null);
@@ -31,6 +31,8 @@ export default function VisualizationScreen() {
   const [south, setSouthScreen] = useState<'none' | 'flex'>('none');
   const [east, setEastScreen] = useState<'none' | 'flex'>('none');
   const [west, setWestScreen] = useState<'none' | 'flex'>('none');
+  const[direction, setDirectionScreen] = useState<'none' | 'flex'>('none');
+  const { heading, direction: currentDirection } = useCompass();
 
   const live_spat_api_url = 'http://129.114.36.77:8080/spat_decoded';
   const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
@@ -178,6 +180,15 @@ export default function VisualizationScreen() {
     setSouthScreen('none');
     setEastScreen('none');
     setWestScreen('flex');
+  };
+
+  const showDirectionPhase = () => {
+    setHomeScreen('none');
+    setNorthScreen('none');
+    setSouthScreen('none');
+    setEastScreen('none');
+    setWestScreen('none');
+    setDirectionScreen('flex');
   };
 
   {/*
@@ -346,6 +357,66 @@ export default function VisualizationScreen() {
     );
   };
 
+  const getSignalGroupsForDirection = (dir: CardinalDirection): number[] => {
+    switch (dir) {
+      case 'N':
+      case 'NE':
+      case 'NW':
+        return [1, 2, 22];
+      case 'S':
+      case 'SE':
+      case 'SW':
+        return [5, 6, 26];
+      case 'E':
+        return [3, 4, 24];
+      case 'W':
+        return [7, 8, 28];
+      default:
+        return [];
+    }
+  };
+
+  const returnPhasesByDirection = () => {
+    const signalGroups = getSignalGroupsForDirection(currentDirection);
+    const directionPhases = phases.filter(
+      (phase) => phase.phase !== null && signalGroups.includes(phase.phase),
+    );
+
+    return directionPhases.length > 0 ? (
+      <View>
+        <Text style={styles.directionLabel}>
+          Direction: {currentDirection} ({heading}°)
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          contentContainerStyle={styles.directionPhasesRow}
+        >
+          {directionPhases.map((phase) => {
+            const actualIndex = phases.indexOf(phase);
+            return (
+              <View key={actualIndex} style={styles.directionPhaseItem}>
+                <TrafficLight
+                  state={phase.state}
+                  countdown={phase.countdown}
+                  intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                  signalGroup={phase.phase}
+                />
+              </View>
+            );
+          })}
+        </ScrollView>
+      </View>
+    ) : (
+      <View>
+        <Text style={styles.directionLabel}>
+          Direction: {currentDirection} ({heading}°)
+        </Text>
+        <Text style={styles.noData}>No phases available for {currentDirection}</Text>
+      </View>
+    );
+  };
+
   const renderSidebar = () => {
     return (
       <Modal visible = {isSideBarOpen} transparent animationType = 'none'>
@@ -384,6 +455,11 @@ export default function VisualizationScreen() {
           <TouchableOpacity onPress={showWestScreen}
             style={styles.sideBarOption}>
             <Text style={styles.sideBarOptionsText}>West</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={showDirectionPhase}
+            style={styles.sideBarOption}>
+            <Text style={styles.sideBarOptionsText}>Signals In Direction</Text>
           </TouchableOpacity>
 
         </Animated.View>
@@ -724,8 +800,8 @@ export default function VisualizationScreen() {
         </View>
 
         </ScrollView>
-      </View>
         </View>
+      </View>
 
 
 
@@ -787,8 +863,43 @@ export default function VisualizationScreen() {
 
         </View>
         </ScrollView>
-      </View>
         </View>
+      </View>
+
+      <View style = {{display: direction, flex: 1,}}>
+        <View style={styles.glassWrapper}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+            <TouchableOpacity onPress = {openSideBar}
+                style = {styles.menuButton}>
+                <Ionicons name = "menu-outline" size = {24} color="black"/>
+            </TouchableOpacity>
+
+            {renderSidebar()}
+
+            <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+
+            {(() => {
+              return (
+                <View>
+                  {returnPhasesByDirection()}
+                </View>
+              );
+            })()}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+
+            <View style = {styles.extraSpacing}>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
         
     </View>
 
@@ -897,7 +1008,7 @@ const styles = StyleSheet.create({
   },
 
   menuButton: {
-    position: 'absolute',
+    position: 'relative',
     left: 14,
     top: 12,
     color: '#ffffff',
@@ -958,9 +1069,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginLeft: 10,
+    textAlign: 'center',
   },
 
   extraSpacing: {
     marginTop: 20,
+  },
+  directionLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 12,
+    padding: 12,
+    backgroundColor: 'rgba(126, 153, 235, 0.3)',
+    borderRadius: 8,
   },
 });
