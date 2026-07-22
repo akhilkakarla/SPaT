@@ -2,7 +2,7 @@ import TrafficLight from '@/components/TrafficLight';
 import { useCompass, type CardinalDirection } from '@/hooks/useCompass';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Modal, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const deviceHeight = Dimensions.get('window').height;
 const deviceWidth = Dimensions.get('window').width;
@@ -148,6 +148,7 @@ export default function VisualizationScreen() {
     setSouthScreen('none');
     setEastScreen('none');
     setWestScreen('none');
+    setDirectionScreen('none');
   };
 
   const showNorthScreen = () => {
@@ -156,6 +157,7 @@ export default function VisualizationScreen() {
     setSouthScreen('none');
     setEastScreen('none');
     setWestScreen('none');
+    setDirectionScreen('none');
   };
 
   const showSouthScreen = () => {
@@ -164,6 +166,7 @@ export default function VisualizationScreen() {
     setSouthScreen('flex');
     setEastScreen('none');
     setWestScreen('none');
+    setDirectionScreen('none');
   };
 
   const showEastScreen = () => {
@@ -172,6 +175,7 @@ export default function VisualizationScreen() {
     setSouthScreen('none');
     setEastScreen('flex');
     setWestScreen('none');
+    setDirectionScreen('none');
   };
 
   const showWestScreen = () => {
@@ -180,6 +184,7 @@ export default function VisualizationScreen() {
     setSouthScreen('none');
     setEastScreen('none');
     setWestScreen('flex');
+    setDirectionScreen('none');
   };
 
   const showDirectionPhase = () => {
@@ -382,30 +387,55 @@ export default function VisualizationScreen() {
       (phase) => phase.phase !== null && signalGroups.includes(phase.phase),
     );
 
+    const isMobile = Platform.OS === 'ios' || Platform.OS === 'android';
+
     return directionPhases.length > 0 ? (
       <View>
         <Text style={styles.directionLabel}>
           Direction: {currentDirection} ({heading}°)
         </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator
-          contentContainerStyle={styles.directionPhasesRow}
-        >
-          {directionPhases.map((phase) => {
-            const actualIndex = phases.indexOf(phase);
-            return (
-              <View key={actualIndex} style={styles.directionPhaseItem}>
-                <TrafficLight
-                  state={phase.state}
-                  countdown={phase.countdown}
-                  intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
-                  signalGroup={phase.phase}
-                />
-              </View>
-            );
-          })}
-        </ScrollView>
+        {isMobile ? (
+          // Vertical layout for iPhone/Android
+          <ScrollView
+            scrollEnabled={directionPhases.length > 2}
+            contentContainerStyle={styles.directionPhasesColumn}
+          >
+            {directionPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItemVertical}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // Horizontal layout for computer/web
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={styles.directionPhasesRow}
+          >
+            {directionPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItem}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
       </View>
     ) : (
       <View>
@@ -1084,5 +1114,15 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: 'rgba(126, 153, 235, 0.3)',
     borderRadius: 8,
+  },
+  directionPhasesColumn: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+  },
+  directionPhaseItemVertical: {
+    marginVertical: 12,
+    width: deviceWidth * 0.8,
   },
 });
