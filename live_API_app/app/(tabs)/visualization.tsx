@@ -34,7 +34,7 @@ export default function VisualizationScreen() {
   const[direction, setDirectionScreen] = useState<'none' | 'flex'>('none');
   const { heading, direction: currentDirection } = useCompass();
 
-  const live_spat_api_url = 'http://129.114.36.77:8080/spat_decoded';
+  const live_spat_api_url = 'http://129.114.37.96:8000/spat_decoded';
   const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
   const fetchLiveSpat = async () => {
     try {
@@ -574,19 +574,16 @@ export default function VisualizationScreen() {
 
         </TouchableOpacity>
 
+        <TouchableOpacity onPress = {openSideBar}
+            style = {styles.menuButton}>
+
+            <Ionicons name = "settings" size = {24} color="black"/>
+
+        </TouchableOpacity>
+
         {renderSidebar()}
 
         <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-        <View style = {styles.messageCounter}>
-          {phases.length > 0 && (
-            <Text style={styles.messageCounterText}>
-              Showing phase {phaseIndex + 1} of {phases.length}
-            </Text>
-          )}
-            <Text style = {styles.messageCounterText}>
-                Total Phases: {phases.length}
-            </Text>
-        </View>
           
 
         {(() => {
@@ -608,6 +605,17 @@ export default function VisualizationScreen() {
               {displayed?.phase !== null && (
                 <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
               )}
+
+              <View style = {styles.messageCounterHome}>
+                {phases.length > 0 && (
+                  <Text style={styles.messageCounterHomeText}>
+                    Showing phase {phaseIndex + 1} of {phases.length}
+                  </Text>
+                )}
+                  <Text style = {styles.messageCounterHomeText}>
+                      Total Phases: {phases.length}
+                  </Text>
+              </View>
 
               {phases.length > 0 && (
                 <View>
@@ -975,12 +983,28 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
 
+  messageCounterHome: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#dbe9ff',
+    alignItems: 'center',
+  },
+
   messageCounterText: {
     color: '#dbe9ff',
     fontSize: 16,
     fontWeight: '700',
     margin: 8,
   },
+
+  messageCounterHomeText: {
+    color: '#dbe9ff',
+    fontSize: 16,
+    fontWeight: '700',
+    margin: 8,
+  },
+
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',

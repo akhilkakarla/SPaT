@@ -10,13 +10,13 @@
 			"path": "../../../filepulse"
 		},
 		{
-			"path": "../../../AIRoadInspectionDashboard"
-		},
-		{
 			"path": "../../../aidashboard"
 		},
 		{
 			"path": "../../../SPaT_App_LiveSPaTAPI"
+		},
+		{
+			"path": "../../../AIRoadInspectionDashboard"
 		}
 	],
 	"settings": {},
