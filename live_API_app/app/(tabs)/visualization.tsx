@@ -1,8 +1,9 @@
 import TrafficLight from '@/components/TrafficLight';
+import { useAppTheme } from '@/hooks/theme-context';
 import { useCompass, type CardinalDirection } from '@/hooks/useCompass';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Modal, Platform, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const deviceHeight = Dimensions.get('window').height;
 const deviceWidth = Dimensions.get('window').width;
@@ -24,6 +25,7 @@ export default function VisualizationScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isSideBarOpen, setIsSideBarVisible] = useState(false);
+  const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
   const sidebarTranslateX = useRef(new Animated.Value(100)).current;
   const [error, setError] = useState<string | null>(null);
   const [home, setHomeScreen] = useState<'none' | 'flex'>('flex');
@@ -33,6 +35,8 @@ export default function VisualizationScreen() {
   const [west, setWestScreen] = useState<'none' | 'flex'>('none');
   const[direction, setDirectionScreen] = useState<'none' | 'flex'>('none');
   const { heading, direction: currentDirection } = useCompass();
+  const { theme, setTheme } = useAppTheme();
+  const [visibility, setVisibility] = useState(false);
 
   const live_spat_api_url = 'http://129.114.37.96:8000/spat_decoded';
   const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
@@ -125,6 +129,7 @@ export default function VisualizationScreen() {
   };
 
   const openSideBar = () => {
+    closeSettingsDropdown();
     setIsSideBarVisible(true)
     Animated.timing(sidebarTranslateX, {
       toValue: 0,
@@ -141,6 +146,86 @@ export default function VisualizationScreen() {
       useNativeDriver: true,
     }).start(() => setIsSideBarVisible(false));
   };
+
+  const closeSettingsDropdown = () => {
+    setIsSettingsDropdownOpen(false);
+  };
+
+  const toggleSettingsDropdown = () => {
+    setIsSettingsDropdownOpen((prev) => !prev);
+  };
+
+  const openVisibilityModal = () => {
+    closeSettingsDropdown();
+    setVisibility(true);
+  };
+
+  const closeVisibilityModal = () => {
+    setVisibility(false);
+  };
+
+  const handleThemeSelect = (selectedTheme: 'light' | 'dark') => {
+    setTheme(selectedTheme);
+    closeVisibilityModal();
+  };
+
+  const showVisibility = () => (
+    <Modal
+      visible={visibility}
+      transparent
+      animationType="fade"
+      onRequestClose={closeVisibilityModal}
+    >
+      <View style={styles.visibilityModalOverlay}>
+        <Pressable
+          style={StyleSheet.absoluteFillObject}
+          onPress={closeVisibilityModal}
+        />
+
+        <View style={styles.visibilityModalCard}>
+          <Text style={styles.visibilityModalTitle}>Appearance</Text>
+          <Text style={styles.visibilityModalSubtitle}>
+            Choose light or dark mode for the app
+          </Text>
+
+          <TouchableOpacity
+            style={[
+              styles.visibilityModalOption,
+              theme === 'light' && styles.visibilityModalOptionSelected,
+            ]}
+            onPress={() => handleThemeSelect('light')}
+          >
+            <Ionicons name="sunny-outline" size={20} color="#1a1a1a" />
+            <Text style={styles.visibilityModalOptionText}>Light Mode</Text>
+            {theme === 'light' && (
+              <Ionicons name="checkmark-circle" size={20} color="#4a7dff" />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.visibilityModalOption,
+              theme === 'dark' && styles.visibilityModalOptionSelected,
+            ]}
+            onPress={() => handleThemeSelect('dark')}
+          >
+            <Ionicons name="moon-outline" size={20} color="#1a1a1a" />
+            <Text style={styles.visibilityModalOptionText}>Dark Mode</Text>
+            {theme === 'dark' && (
+              <Ionicons name="checkmark-circle" size={20} color="#4a7dff" />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.visibilityModalCloseButton}
+            onPress={closeVisibilityModal}
+          >
+            <Text style={styles.visibilityModalCloseText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const showHomeScreen = () => {
     setHomeScreen('flex');
@@ -447,6 +532,49 @@ export default function VisualizationScreen() {
     );
   };
 
+  const renderHeaderButtons = () => (
+    <View style={styles.headerButtons}>
+      <TouchableOpacity onPress={openSideBar} style={styles.menuButton}>
+        <Ionicons name="menu-outline" size={24} color="black" />
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={toggleSettingsDropdown}
+        style={styles.settingsButton}
+      >
+        <Ionicons name="settings" size={24} color="black" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderSettingsDropdown = () => (
+    <Modal
+      visible={isSettingsDropdownOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={closeSettingsDropdown}
+    >
+      <View style={styles.settingsDropdownOverlay}>
+        <Pressable
+          style={StyleSheet.absoluteFillObject}
+          onPress={closeSettingsDropdown}
+        />
+
+        <View style={styles.settingsDropdownContainer}>
+          <View style={styles.settingsDropdown}>
+            <TouchableOpacity
+              style={styles.settingsDropdownOption}
+              onPress={openVisibilityModal}
+            >
+              <Ionicons name="contrast-outline" size={18} color="#1a1a1a" />
+              <Text style={styles.settingsDropdownText}>Visibility</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderSidebar = () => {
     return (
       <Modal visible = {isSideBarOpen} transparent animationType = 'none'>
@@ -560,6 +688,8 @@ export default function VisualizationScreen() {
 
   return (
     <View style={styles.screenBackground}>
+      {renderSettingsDropdown()}
+      {showVisibility()}
       <View style={{ display: home, flex: 1 }}>
       <View style={styles.glassWrapper}>
         <ScrollView
@@ -567,19 +697,7 @@ export default function VisualizationScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
 
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "menu-outline" size = {24} color="black"/>
-
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "settings" size = {24} color="black"/>
-
-        </TouchableOpacity>
+        {renderHeaderButtons()}
 
         {renderSidebar()}
 
@@ -666,13 +784,7 @@ export default function VisualizationScreen() {
           contentContainerStyle={styles.scrollContainer}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
-
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "menu-outline" size = {24} color="black"/>
-
-        </TouchableOpacity>
+        {renderHeaderButtons()}
 
         {renderSidebar()}
 
@@ -728,12 +840,7 @@ export default function VisualizationScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
 
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "menu-outline" size = {24} color="black"/>
-
-        </TouchableOpacity>
+        {renderHeaderButtons()}
 
         {renderSidebar()}
 
@@ -791,12 +898,7 @@ export default function VisualizationScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
 
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "menu-outline" size = {24} color="black"/>
-
-        </TouchableOpacity>
+        {renderHeaderButtons()}
 
         {renderSidebar()}
 
@@ -845,9 +947,6 @@ export default function VisualizationScreen() {
 
 
 
-
-
-
         <View style={{ display: west, flex: 1 }}>
           <View style={styles.glassWrapper}>
         <ScrollView
@@ -855,12 +954,7 @@ export default function VisualizationScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
 
-        <TouchableOpacity onPress = {openSideBar}
-            style = {styles.menuButton}>
-
-            <Ionicons name = "menu-outline" size = {24} color="black"/>
-
-        </TouchableOpacity>
+        {renderHeaderButtons()}
 
         {renderSidebar()}
 
@@ -910,10 +1004,7 @@ export default function VisualizationScreen() {
             contentContainerStyle={styles.scrollContainer}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           >
-            <TouchableOpacity onPress = {openSideBar}
-                style = {styles.menuButton}>
-                <Ionicons name = "menu-outline" size = {24} color="black"/>
-            </TouchableOpacity>
+            {renderHeaderButtons()}
 
             {renderSidebar()}
 
@@ -957,6 +1048,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
+    paddingTop: 70,
     paddingBottom: 48,
   },
   title: {
@@ -1061,21 +1153,153 @@ const styles = StyleSheet.create({
     width: deviceWidth * 0.3,
   },
 
-  menuButton: {
-    position: 'relative',
-    left: 14,
+  headerButtons: {
+    position: 'absolute',
     top: 12,
-    color: '#ffffff',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    pointerEvents: 'box-none',
+  },
+
+  menuButton: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
     width: 40,
     borderRadius: 12,
-    backgroundColor: '#ffff',
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
+    margin: 0,
+  },
+
+  settingsButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    margin: 0,
+  },
+
+  settingsDropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+  },
+
+  settingsDropdownContainer: {
+    position: 'absolute',
+    top: 56,
+    right: 16,
+    zIndex: 2,
+  },
+
+  settingsDropdown: {
+    minWidth: 190,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+
+  settingsDropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+
+  settingsDropdownText: {
+    marginLeft: 10,
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+
+  visibilityModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    paddingHorizontal: 24,
+  },
+
+  visibilityModalCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+
+  visibilityModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 6,
+  },
+
+  visibilityModalSubtitle: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 18,
+  },
+
+  visibilityModalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginBottom: 10,
+  },
+
+  visibilityModalOptionSelected: {
+    borderColor: '#4a7dff',
+    backgroundColor: 'rgba(74, 125, 255, 0.08)',
+  },
+
+  visibilityModalOptionText: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+
+  visibilityModalCloseButton: {
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+
+  visibilityModalCloseText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666666',
   },
 
   sideBar: {
