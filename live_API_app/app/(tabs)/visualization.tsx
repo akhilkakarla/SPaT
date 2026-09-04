@@ -33,9 +33,55 @@ export default function VisualizationScreen() {
   const [south, setSouthScreen] = useState<'none' | 'flex'>('none');
   const [east, setEastScreen] = useState<'none' | 'flex'>('none');
   const [west, setWestScreen] = useState<'none' | 'flex'>('none');
-  const[direction, setDirectionScreen] = useState<'none' | 'flex'>('none');
+  const [direction, setDirectionScreen] = useState<'none' | 'flex'>('none');
   const { heading, direction: currentDirection } = useCompass();
   const { theme, setTheme } = useAppTheme();
+  const isDark = theme === 'dark';
+  const palette = isDark
+    ? {
+        background: '#071427',
+        panel: 'rgba(17, 24, 39, 0.9)',
+        panelAlt: 'rgba(15, 23, 42, 0.82)',
+        card: 'rgba(148, 163, 184, 0.12)',
+        softCard: 'rgba(15, 23, 42, 0.7)',
+        text: '#f8fbff',
+        textSoft: '#dce7ff',
+        textMuted: '#9aa4b2',
+        textStrong: '#1f2937',
+        border: 'rgba(148, 163, 184, 0.28)',
+        button: '#ffffff',
+        buttonText: '#111827',
+        accent: '#4a7dff',
+        accentSoft: 'rgba(74, 125, 255, 0.12)',
+        header: '#0f172a',
+        sidebar: '#020817',
+        overlay: 'rgba(15, 23, 42, 0.45)',
+        modal: '#ffffff',
+        modalText: '#1a1a1a',
+        modalMuted: '#666666',
+      }
+    : {
+        background: '#f3f7ff',
+        panel: '#ffffff',
+        panelAlt: '#eef4ff',
+        card: '#eaf1ff',
+        softCard: '#f8faff',
+        text: '#111827',
+        textSoft: '#1f2937',
+        textMuted: '#5b6472',
+        textStrong: '#111827',
+        border: '#dfe7f5',
+        button: '#ffffff',
+        buttonText: '#111827',
+        accent: '#3b82f6',
+        accentSoft: 'rgba(59, 130, 246, 0.12)',
+        header: '#e8eefc',
+        sidebar: '#e2e8f0',
+        overlay: 'rgba(15, 23, 42, 0.12)',
+        modal: '#ffffff',
+        modalText: '#1a1a1a',
+        modalMuted: '#666666',
+      };
   const [visibility, setVisibility] = useState(false);
 
   const live_spat_api_url = 'http://129.114.37.96:8000/spat_decoded';
@@ -43,9 +89,9 @@ export default function VisualizationScreen() {
   const fetchLiveSpat = async () => {
     try {
       var res = await fetch(live_spat_api_url);
-      if (!res.ok){
+      if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
-      } 
+      }
 
       const data = await res.json();
       const movementStates = data?.states?.MovementState;
@@ -85,7 +131,7 @@ export default function VisualizationScreen() {
             movement?.['state-time-speed']?.MovementEvent?.timing?.remainingTimeSec;
 
           const remainingEndTimeNum =
-          remainingEndTimeRaw !== undefined && remainingEndTimeRaw !== null
+            remainingEndTimeRaw !== undefined && remainingEndTimeRaw !== null
               ? Number(remainingEndTimeRaw)
               : NaN;
 
@@ -176,43 +222,45 @@ export default function VisualizationScreen() {
       animationType="fade"
       onRequestClose={closeVisibilityModal}
     >
-      <View style={styles.visibilityModalOverlay}>
+      <View style={[styles.visibilityModalOverlay, { backgroundColor: palette.overlay }]}>
         <Pressable
           style={StyleSheet.absoluteFillObject}
           onPress={closeVisibilityModal}
         />
 
-        <View style={styles.visibilityModalCard}>
-          <Text style={styles.visibilityModalTitle}>Appearance</Text>
-          <Text style={styles.visibilityModalSubtitle}>
+        <View style={[styles.visibilityModalCard, { backgroundColor: palette.modal, shadowColor: isDark ? '#000' : '#94a3b8' }]}>
+          <Text style={[styles.visibilityModalTitle, { color: palette.modalText }]}>Appearance</Text>
+          <Text style={[styles.visibilityModalSubtitle, { color: palette.modalMuted }]}>
             Choose light or dark mode for the app
           </Text>
 
           <TouchableOpacity
             style={[
               styles.visibilityModalOption,
+              { borderColor: palette.border, backgroundColor: theme === 'light' ? palette.accentSoft : 'transparent' },
               theme === 'light' && styles.visibilityModalOptionSelected,
             ]}
             onPress={() => handleThemeSelect('light')}
           >
-            <Ionicons name="sunny-outline" size={20} color="#1a1a1a" />
-            <Text style={styles.visibilityModalOptionText}>Light Mode</Text>
+            <Ionicons name="sunny-outline" size={20} color={palette.modalText} />
+            <Text style={[styles.visibilityModalOptionText, { color: palette.modalText }]}>Light Mode</Text>
             {theme === 'light' && (
-              <Ionicons name="checkmark-circle" size={20} color="#4a7dff" />
+              <Ionicons name="checkmark-circle" size={20} color={palette.accent} />
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.visibilityModalOption,
+              { borderColor: palette.border, backgroundColor: theme === 'dark' ? palette.accentSoft : 'transparent' },
               theme === 'dark' && styles.visibilityModalOptionSelected,
             ]}
             onPress={() => handleThemeSelect('dark')}
           >
-            <Ionicons name="moon-outline" size={20} color="#1a1a1a" />
-            <Text style={styles.visibilityModalOptionText}>Dark Mode</Text>
+            <Ionicons name="moon-outline" size={20} color={palette.modalText} />
+            <Text style={[styles.visibilityModalOptionText, { color: palette.modalText }]}>Dark Mode</Text>
             {theme === 'dark' && (
-              <Ionicons name="checkmark-circle" size={20} color="#4a7dff" />
+              <Ionicons name="checkmark-circle" size={20} color={palette.accent} />
             )}
           </TouchableOpacity>
 
@@ -220,7 +268,7 @@ export default function VisualizationScreen() {
             style={styles.visibilityModalCloseButton}
             onPress={closeVisibilityModal}
           >
-            <Text style={styles.visibilityModalCloseText}>Cancel</Text>
+            <Text style={[styles.visibilityModalCloseText, { color: palette.modalMuted }]}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -476,7 +524,7 @@ export default function VisualizationScreen() {
 
     return directionPhases.length > 0 ? (
       <View>
-        <Text style={styles.directionLabel}>
+        <Text style={[styles.directionLabel, { color: palette.text, backgroundColor: isDark ? 'rgba(126, 153, 235, 0.22)' : 'rgba(126, 153, 235, 0.12)' }]}>
           Direction: {currentDirection} ({heading}°)
         </Text>
         {isMobile ? (
@@ -524,25 +572,25 @@ export default function VisualizationScreen() {
       </View>
     ) : (
       <View>
-        <Text style={styles.directionLabel}>
+        <Text style={[styles.directionLabel, { color: palette.text, backgroundColor: isDark ? 'rgba(126, 153, 235, 0.22)' : 'rgba(126, 153, 235, 0.12)' }]}>
           Direction: {currentDirection} ({heading}°)
         </Text>
-        <Text style={styles.noData}>No phases available for {currentDirection}</Text>
+        <Text style={[styles.noData, { color: palette.textMuted }]}>No phases available for {currentDirection}</Text>
       </View>
     );
   };
 
   const renderHeaderButtons = () => (
     <View style={styles.headerButtons}>
-      <TouchableOpacity onPress={openSideBar} style={styles.menuButton}>
-        <Ionicons name="menu-outline" size={24} color="black" />
+      <TouchableOpacity onPress={openSideBar} style={[styles.menuButton, { backgroundColor: palette.button, shadowColor: isDark ? '#000' : '#8aa2d8' }]}>
+        <Ionicons name="menu-outline" size={24} color={palette.buttonText} />
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={toggleSettingsDropdown}
-        style={styles.settingsButton}
+        style={[styles.settingsButton, { backgroundColor: palette.button, shadowColor: isDark ? '#000' : '#8aa2d8' }]}
       >
-        <Ionicons name="settings" size={24} color="black" />
+        <Ionicons name="settings" size={24} color={palette.buttonText} />
       </TouchableOpacity>
     </View>
   );
@@ -554,20 +602,20 @@ export default function VisualizationScreen() {
       animationType="fade"
       onRequestClose={closeSettingsDropdown}
     >
-      <View style={styles.settingsDropdownOverlay}>
+      <View style={[styles.settingsDropdownOverlay, { backgroundColor: palette.overlay }]}>
         <Pressable
           style={StyleSheet.absoluteFillObject}
           onPress={closeSettingsDropdown}
         />
 
         <View style={styles.settingsDropdownContainer}>
-          <View style={styles.settingsDropdown}>
+          <View style={[styles.settingsDropdown, { backgroundColor: palette.modal, shadowColor: isDark ? '#000' : '#8aa2d8' }]}>
             <TouchableOpacity
               style={styles.settingsDropdownOption}
               onPress={openVisibilityModal}
             >
-              <Ionicons name="contrast-outline" size={18} color="#1a1a1a" />
-              <Text style={styles.settingsDropdownText}>Visibility</Text>
+              <Ionicons name="contrast-outline" size={18} color={palette.modalText} />
+              <Text style={[styles.settingsDropdownText, { color: palette.modalText }]}>Visibility</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -577,47 +625,47 @@ export default function VisualizationScreen() {
 
   const renderSidebar = () => {
     return (
-      <Modal visible = {isSideBarOpen} transparent animationType = 'none'>
-        <TouchableWithoutFeedback onPress = {closeSideBar}>
-          <View style = {{flex: 1}}></View>
+      <Modal visible={isSideBarOpen} transparent animationType='none'>
+        <TouchableWithoutFeedback onPress={closeSideBar}>
+          <View style={{ flex: 1 }}></View>
         </TouchableWithoutFeedback>
 
         <Animated.View
-          style = {[styles.sideBar, {transform: [{translateX: sidebarTranslateX}]}]}>
+          style={[styles.sideBar, { backgroundColor: palette.sidebar, transform: [{ translateX: sidebarTranslateX }] }]}>
 
-          <TouchableOpacity onPress = {closeSideBar}
-            style = {styles.sideBarCloseButton}> 
-            <Ionicons name = "close" size = {20} color="white"/>
+          <TouchableOpacity onPress={closeSideBar}
+            style={styles.sideBarCloseButton}>
+            <Ionicons name="close" size={20} color={isDark ? '#f8fafc' : '#0f172a'} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity onPress={showHomeScreen}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>Home</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>Home</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showNorthScreen}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>North</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>North</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showSouthScreen}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>South</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>South</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showEastScreen}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>East</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>East</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showWestScreen}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>West</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>West</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={showDirectionPhase}
             style={styles.sideBarOption}>
-            <Text style={styles.sideBarOptionsText}>Signals In Direction</Text>
+            <Text style={[styles.sideBarOptionsText, { color: isDark ? '#eaf4ff' : '#0f172a' }]}>Signals In Direction</Text>
           </TouchableOpacity>
 
         </Animated.View>
@@ -679,267 +727,96 @@ export default function VisualizationScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator />
-        <Text style={{ marginTop: 8 }}>Loading traffic light data...</Text>
+      <View style={[styles.container, { backgroundColor: palette.background }]}> 
+        <ActivityIndicator color={isDark ? '#f8fbff' : '#0f172a'} />
+        <Text style={{ marginTop: 8, color: palette.text }}>Loading traffic light data...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.screenBackground}>
+    <View style={[styles.screenBackground, { backgroundColor: palette.background }]}>
       {renderSettingsDropdown()}
       {showVisibility()}
       <View style={{ display: home, flex: 1 }}>
-      <View style={styles.glassWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
 
-        {renderHeaderButtons()}
+            {renderHeaderButtons()}
 
-        {renderSidebar()}
+            {renderSidebar()}
 
-        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-          
+            <Text style={[styles.title, { color: palette.text }]}>Traffic Light Visualization: Live SPaT API</Text>
 
-        {(() => {
-          const displayed = phases && phases.length ? phases[phaseIndex] : null;
-          const displayedState = displayed?.state || null;
-          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
+            {(() => {
+              const displayed = phases && phases.length ? phases[phaseIndex] : null;
+              const displayedState = displayed?.state || null;
+              const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+              const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
 
-          return (
-            <View>
+              return (
                 <View>
-                  <TrafficLight
-                    state={displayedState}
-                    countdown={countdownToDisplay}
-                    intersectionId={displayedIntersection}
-                    signalGroup={displayed?.phase ?? null}
-                  />
-                </View>
-              {displayed?.phase !== null && (
-                <Text style={styles.messageCounter}>Signal Group: {displayed?.phase}</Text>
-              )}
+                  <View>
+                    <TrafficLight
+                      state={displayedState}
+                      countdown={countdownToDisplay}
+                      intersectionId={displayedIntersection}
+                      signalGroup={displayed?.phase ?? null}
+                    />
+                  </View>
+                  {displayed?.phase !== null && (
+                    <Text style={[styles.messageCounter, { color: palette.textSoft }]}>Signal Group: {displayed?.phase}</Text>
+                  )}
 
-              <View style = {styles.messageCounterHome}>
-                {phases.length > 0 && (
-                  <Text style={styles.messageCounterHomeText}>
-                    Showing phase {phaseIndex + 1} of {phases.length}
-                  </Text>
-                )}
-                  <Text style = {styles.messageCounterHomeText}>
-                      Total Phases: {phases.length}
-                  </Text>
-              </View>
-
-              {phases.length > 0 && (
-                <View>
-                  {phases.map((phase, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        backgroundColor: 'rgba(126, 153, 235, 0.65)',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: 10,
-                        padding: 10,
-                        borderRadius: 8,
-                      }}
-                      onPress={() => {
-                        setSignalPhase(index)
-                      }}
-                    >
-                      <Text style={{color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center'}}>
-                        Phase {phase.phase}
+                  <View style={[styles.messageCounterHome, { alignItems: 'center' }] }>
+                    {phases.length > 0 && (
+                      <Text style={[styles.messageCounterHomeText, { color: palette.textSoft }]}>
+                        Showing phase {phaseIndex + 1} of {phases.length}
                       </Text>
-                    </TouchableOpacity>
-                  ))}
+                    )}
+                    <Text style={[styles.messageCounterHomeText, { color: palette.textSoft }]}>
+                      Total Phases: {phases.length}
+                    </Text>
+                  </View>
+
+                  {phases.length > 0 && (
+                    <View>
+                      {phases.map((phase, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={{
+                            backgroundColor: 'rgba(126, 153, 235, 0.65)',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: 10,
+                            padding: 10,
+                            borderRadius: 8,
+                          }}
+                          onPress={() => {
+                            setSignalPhase(index)
+                          }}
+                        >
+                          <Text style={{ color: '#ffff', fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>
+                            Phase {phase.phase}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
-              )}
-            </View>
 
-          );
-        })()}
+              );
+            })()}
 
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.error}>Error: {error}</Text>
-          </View>
-        )}
-        </ScrollView>
-      </View>
-      </View>
-
-
-
-
-
-
-        <View style={{ display: north, flex: 1 }}>
-          <View style={styles.glassWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-        {renderHeaderButtons()}
-
-        {renderSidebar()}
-
-        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-        <View style = {styles.messageCounter}>
-          {phases.length > 0 && (
-            <Text style={styles.messageCounterText}>
-              Showing phase {phaseIndex + 1} of {phases.length}
-            </Text>
-          )}
-            <Text style = {styles.messageCounterText}>
-                Total Phases: {phases.length}
-            </Text>
-        </View>
-          
-
-        {(() => {
-          const displayed = phases && phases.length ? phases[phaseIndex] : null;
-          const displayedState = displayed?.state || null;
-          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
-
-          return (
-            <View>
-              {returnNorthPhases()}
-            </View>
-
-          );
-        })()}
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.error}>Error: {error}</Text>
-          </View>
-        )}
-
-        <View style = {styles.extraSpacing}>
-
-        </View>
-        </ScrollView>
-      </View>
-        </View>
-
-
-
-
-
-
-        <View style={{ display: south, flex: 1 }}>
-          <View style={styles.glassWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-
-        {renderHeaderButtons()}
-
-        {renderSidebar()}
-
-        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-        <View style = {styles.messageCounter}>
-          {phases.length > 0 && (
-            <Text style={styles.messageCounterText}>
-              Showing phase {phaseIndex + 1} of {phases.length}
-            </Text>
-          )}
-            <Text style = {styles.messageCounterText}>
-                Total Phases: {phases.length}
-            </Text>
-        </View>
-          
-
-        {(() => {
-          const displayed = phases && phases.length ? phases[phaseIndex] : null;
-          const displayedState = displayed?.state || null;
-          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
-
-          return (
-            <View>
-              {returnSouthPhases()}
-            </View>
-
-          );
-        })()}
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.error}>Error: {error}</Text>
-          </View>
-        )}
-
-        <View style = {styles.extraSpacing}>
-
-        </View>
-        </ScrollView>
-      </View>
-        </View>
-
-
-
-
-
-
-
-
-        <View style={{ display: east, flex: 1 }}>
-          <View style={styles.glassWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
-
-        {renderHeaderButtons()}
-
-        {renderSidebar()}
-
-        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-        <View style = {styles.messageCounter}>
-          {phases.length > 0 && (
-            <Text style={styles.messageCounterText}>
-              Showing phase {phaseIndex + 1} of {phases.length}
-            </Text>
-          )}
-            <Text style = {styles.messageCounterText}>
-                Total Phases: {phases.length}
-            </Text>
-        </View>
-          
-
-        {(() => {
-          const displayed = phases && phases.length ? phases[phaseIndex] : null;
-          const displayedState = displayed?.state || null;
-          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
-
-          return (
-            <View>
-              {returnEastPhases()}
-            </View>
-
-          );
-        })()}
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.error}>Error: {error}</Text>
-          </View>
-        )}
-
-        <View style = {styles.extraSpacing}>
-
-        </View>
-
-        </ScrollView>
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+          </ScrollView>
         </View>
       </View>
 
@@ -947,59 +824,9 @@ export default function VisualizationScreen() {
 
 
 
-        <View style={{ display: west, flex: 1 }}>
-          <View style={styles.glassWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        >
 
-        {renderHeaderButtons()}
-
-        {renderSidebar()}
-
-        <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
-        <View style = {styles.messageCounter}>
-          {phases.length > 0 && (
-            <Text style={styles.messageCounterText}>
-              Showing phase {phaseIndex + 1} of {phases.length}
-            </Text>
-          )}
-            <Text style = {styles.messageCounterText}>
-                Total Phases: {phases.length}
-            </Text>
-        </View>
-          
-
-        {(() => {
-          const displayed = phases && phases.length ? phases[phaseIndex] : null;
-          const displayedState = displayed?.state || null;
-          const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
-          const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;  
-
-          return (
-            <View>
-              {returnWestPhases()}
-            </View>
-
-          );
-        })()}
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.error}>Error: {error}</Text>
-          </View>
-        )}
-
-        <View style = {styles.extraSpacing}>
-
-        </View>
-        </ScrollView>
-        </View>
-      </View>
-
-      <View style = {{display: direction, flex: 1,}}>
-        <View style={styles.glassWrapper}>
+      <View style={{ display: north, flex: 1 }}>
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -1009,6 +836,226 @@ export default function VisualizationScreen() {
             {renderSidebar()}
 
             <Text style={styles.title}>Traffic Light Visualization: Live SPaT API</Text>
+            <View style={styles.messageCounter}>
+              {phases.length > 0 && (
+                <Text style={styles.messageCounterText}>
+                  Showing phase {phaseIndex + 1} of {phases.length}
+                </Text>
+              )}
+              <Text style={styles.messageCounterText}>
+                Total Phases: {phases.length}
+              </Text>
+            </View>
+
+
+            {(() => {
+              const displayed = phases && phases.length ? phases[phaseIndex] : null;
+              const displayedState = displayed?.state || null;
+              const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+              const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
+
+              return (
+                <View>
+                  {returnNorthPhases()}
+                </View>
+
+              );
+            })()}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+
+            <View style={styles.extraSpacing}>
+
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+
+
+
+
+
+
+      <View style={{ display: south, flex: 1 }}>
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+
+            {renderHeaderButtons()}
+
+            {renderSidebar()}
+
+            <Text style={[styles.title, { color: palette.text }]}>Traffic Light Visualization: Live SPaT API</Text>
+            <View style={[styles.messageCounter, { alignItems: 'flex-end' }]}>
+              {phases.length > 0 && (
+                <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                  Showing phase {phaseIndex + 1} of {phases.length}
+                </Text>
+              )}
+              <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                Total Phases: {phases.length}
+              </Text>
+            </View>
+
+
+            {(() => {
+              const displayed = phases && phases.length ? phases[phaseIndex] : null;
+              const displayedState = displayed?.state || null;
+              const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+              const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
+
+              return (
+                <View>
+                  {returnSouthPhases()}
+                </View>
+
+              );
+            })()}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+
+            <View style={styles.extraSpacing}>
+
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+
+
+
+
+
+
+
+
+      <View style={{ display: east, flex: 1 }}>
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+
+            {renderHeaderButtons()}
+
+            {renderSidebar()}
+
+            <Text style={[styles.title, { color: palette.text }]}>Traffic Light Visualization: Live SPaT API</Text>
+            <View style={[styles.messageCounter, { alignItems: 'flex-end' }]}>
+              {phases.length > 0 && (
+                <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                  Showing phase {phaseIndex + 1} of {phases.length}
+                </Text>
+              )}
+              <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                Total Phases: {phases.length}
+              </Text>
+            </View>
+
+
+            {(() => {
+              const displayed = phases && phases.length ? phases[phaseIndex] : null;
+              const displayedState = displayed?.state || null;
+              const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+              const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
+
+              return (
+                <View>
+                  {returnEastPhases()}
+                </View>
+
+              );
+            })()}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+
+            <View style={styles.extraSpacing}>
+
+            </View>
+
+          </ScrollView>
+        </View>
+      </View>
+
+
+
+
+
+      <View style={{ display: west, flex: 1 }}>
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+
+            {renderHeaderButtons()}
+
+            {renderSidebar()}
+
+            <Text style={[styles.title, { color: palette.text }]}>Traffic Light Visualization: Live SPaT API</Text>
+            <View style={[styles.messageCounter, { alignItems: 'flex-end' }]}>
+              {phases.length > 0 && (
+                <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                  Showing phase {phaseIndex + 1} of {phases.length}
+                </Text>
+              )}
+              <Text style={[styles.messageCounterText, { color: palette.textSoft }]}>
+                Total Phases: {phases.length}
+              </Text>
+            </View>
+
+
+            {(() => {
+              const displayed = phases && phases.length ? phases[phaseIndex] : null;
+              const displayedState = displayed?.state || null;
+              const countdownToDisplay = displayedCountdown ?? displayed?.countdown ?? null;
+              const displayedIntersection = displayed?.intersection_id ?? topIntersectionId ?? null;
+
+              return (
+                <View>
+                  {returnWestPhases()}
+                </View>
+
+              );
+            })()}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.error}>Error: {error}</Text>
+              </View>
+            )}
+
+            <View style={styles.extraSpacing}>
+
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+
+      <View style={{ display: direction, flex: 1, }}>
+        <View style={[styles.glassWrapper, { backgroundColor: palette.panel, borderColor: palette.border }]}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          >
+            {renderHeaderButtons()}
+
+            {renderSidebar()}
+
+            <Text style={[styles.title, { color: palette.text }]}>Traffic Light Visualization: Live SPaT API</Text>
 
             {(() => {
               return (
@@ -1024,12 +1071,12 @@ export default function VisualizationScreen() {
               </View>
             )}
 
-            <View style = {styles.extraSpacing}>
+            <View style={styles.extraSpacing}>
             </View>
           </ScrollView>
         </View>
       </View>
-        
+
     </View>
 
   );
@@ -1303,7 +1350,6 @@ const styles = StyleSheet.create({
   },
 
   sideBar: {
-    backgroundColor: 'black',
     position: 'absolute',
     left: 0,
     width: Math.min(deviceWidth * 0.72, 340),
@@ -1320,9 +1366,7 @@ const styles = StyleSheet.create({
     margin: 12,
     borderRadius: 18,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.02)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
   },
 
   sideBarCloseButton: {
