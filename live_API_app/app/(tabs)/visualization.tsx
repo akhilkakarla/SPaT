@@ -84,8 +84,9 @@ export default function VisualizationScreen() {
       };
   const [visibility, setVisibility] = useState(false);
 
-  const live_spat_api_url = 'http://129.114.37.96:8000/spat_decoded';
+  const live_spat_api_url = 'http://129.114.36.77:8080/spat_decoded';
   const backup_url = "http://192.168.86.222:5430/api/traffic_light_state";
+  const isMobile = Platform.OS === 'ios' || Platform.OS === 'android';
   const fetchLiveSpat = async () => {
     try {
       var res = await fetch(live_spat_api_url);
@@ -224,7 +225,7 @@ export default function VisualizationScreen() {
     >
       <View style={[styles.visibilityModalOverlay, { backgroundColor: palette.overlay }]}>
         <Pressable
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           onPress={closeVisibilityModal}
         />
 
@@ -378,25 +379,56 @@ export default function VisualizationScreen() {
     );
 
     return northPhases.length > 0 ? (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator
-        contentContainerStyle={styles.directionPhasesRow}
-      >
-        {northPhases.map((phase) => {
-          const actualIndex = phases.indexOf(phase);
-          return (
-            <View key={actualIndex} style={styles.directionPhaseItem}>
-              <TrafficLight
-                state={phase.state}
-                countdown={phase.countdown}
-                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
-                signalGroup={phase.phase}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View>
+        {isMobile ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            scrollEnabled={northPhases.length > 1}
+            nestedScrollEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            contentContainerStyle={styles.directionPhasesMobileDeck}
+          >
+            {northPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItemMobile}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // Horizontal layout for computer/web
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={styles.directionPhasesRow}
+          >
+            {northPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItem}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
+      </View>
     ) : (
       <Text style={styles.noData}>No north phases available</Text>
     );
@@ -409,25 +441,56 @@ export default function VisualizationScreen() {
     );
 
     return southPhases.length > 0 ? (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator
-        contentContainerStyle={styles.directionPhasesRow}
-      >
-        {southPhases.map((phase) => {
-          const actualIndex = phases.indexOf(phase);
-          return (
-            <View key={actualIndex} style={styles.directionPhaseItem}>
-              <TrafficLight
-                state={phase.state}
-                countdown={phase.countdown}
-                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
-                signalGroup={phase.phase}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View>
+        {isMobile ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            scrollEnabled={southPhases.length > 1}
+            nestedScrollEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            contentContainerStyle={styles.directionPhasesMobileDeck}
+          >
+            {southPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItemMobile}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // Horizontal layout for computer/web
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={styles.directionPhasesRow}
+          >
+            {southPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItem}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
+      </View>
     ) : (
       <Text style={styles.noData}>No north phases available</Text>
     );
@@ -440,25 +503,56 @@ export default function VisualizationScreen() {
     );
 
     return eastPhases.length > 0 ? (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator
-        contentContainerStyle={styles.directionPhasesRow}
-      >
-        {eastPhases.map((phase) => {
-          const actualIndex = phases.indexOf(phase);
-          return (
-            <View key={actualIndex} style={styles.directionPhaseItem}>
-              <TrafficLight
-                state={phase.state}
-                countdown={phase.countdown}
-                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
-                signalGroup={phase.phase}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View>
+        {isMobile ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            scrollEnabled={eastPhases.length > 1}
+            nestedScrollEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            contentContainerStyle={styles.directionPhasesMobileDeck}
+          >
+            {eastPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItemMobile}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // Horizontal layout for computer/web
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={styles.directionPhasesRow}
+          >
+            {eastPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItem}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
+      </View>
     ) : (
       <Text style={styles.noData}>No north phases available</Text>
     );
@@ -471,25 +565,56 @@ export default function VisualizationScreen() {
     );
 
     return westPhases.length > 0 ? (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator
-        contentContainerStyle={styles.directionPhasesRow}
-      >
-        {westPhases.map((phase) => {
-          const actualIndex = phases.indexOf(phase);
-          return (
-            <View key={actualIndex} style={styles.directionPhaseItem}>
-              <TrafficLight
-                state={phase.state}
-                countdown={phase.countdown}
-                intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
-                signalGroup={phase.phase}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
+      <View>
+        {isMobile ? (
+          <ScrollView
+            horizontal
+            pagingEnabled
+            scrollEnabled={westPhases.length > 1}
+            nestedScrollEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            contentContainerStyle={styles.directionPhasesMobileDeck}
+          >
+            {westPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItemMobile}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          // Horizontal layout for computer/web
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            contentContainerStyle={styles.directionPhasesRow}
+          >
+            {westPhases.map((phase) => {
+              const actualIndex = phases.indexOf(phase);
+              return (
+                <View key={actualIndex} style={styles.directionPhaseItem}>
+                  <TrafficLight
+                    state={phase.state}
+                    countdown={phase.countdown}
+                    intersectionId={phase.intersection_id ?? topIntersectionId ?? null}
+                    signalGroup={phase.phase}
+                  />
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
+      </View>
     ) : (
       <Text style={styles.noData}>No north phases available</Text>
     );
@@ -520,23 +645,27 @@ export default function VisualizationScreen() {
       (phase) => phase.phase !== null && signalGroups.includes(phase.phase),
     );
 
-    const isMobile = Platform.OS === 'ios' || Platform.OS === 'android';
-
     return directionPhases.length > 0 ? (
       <View>
         <Text style={[styles.directionLabel, { color: palette.text, backgroundColor: isDark ? 'rgba(126, 153, 235, 0.22)' : 'rgba(126, 153, 235, 0.12)' }]}>
           Direction: {currentDirection} ({heading}°)
         </Text>
         {isMobile ? (
-          // Vertical layout for iPhone/Android
           <ScrollView
-            scrollEnabled={directionPhases.length > 2}
-            contentContainerStyle={styles.directionPhasesColumn}
+            horizontal
+            pagingEnabled
+            scrollEnabled={directionPhases.length > 1}
+            nestedScrollEnabled
+            bounces={false}
+            showsHorizontalScrollIndicator={false}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            contentContainerStyle={styles.directionPhasesMobileDeck}
           >
             {directionPhases.map((phase) => {
               const actualIndex = phases.indexOf(phase);
               return (
-                <View key={actualIndex} style={styles.directionPhaseItemVertical}>
+                <View key={actualIndex} style={styles.directionPhaseItemMobile}>
                   <TrafficLight
                     state={phase.state}
                     countdown={phase.countdown}
@@ -580,6 +709,29 @@ export default function VisualizationScreen() {
     );
   };
 
+  const decodeDirection = (dir: CardinalDirection) => {
+    switch (dir) {
+      case 'N':
+        return 'North';
+      case 'NE':
+        return 'Northeast';
+      case 'E':
+        return 'East';
+      case 'SE':
+        return 'Southeast';
+      case 'S':
+        return 'South';
+      case 'SW':
+        return 'Southwest';
+      case 'W':
+        return 'West';
+      case 'NW':
+        return 'Northwest';
+      default:
+        return 'North';
+    }
+  };
+
   const renderHeaderButtons = () => (
     <View style={styles.headerButtons}>
       <TouchableOpacity onPress={openSideBar} style={[styles.menuButton, { backgroundColor: palette.button, shadowColor: isDark ? '#000' : '#8aa2d8' }]}>
@@ -604,7 +756,7 @@ export default function VisualizationScreen() {
     >
       <View style={[styles.settingsDropdownOverlay, { backgroundColor: palette.overlay }]}>
         <Pressable
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           onPress={closeSettingsDropdown}
         />
 
@@ -1051,6 +1203,11 @@ export default function VisualizationScreen() {
             contentContainerStyle={styles.scrollContainer}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           >
+
+            <View style = {styles.signalsInDirectionHeader}>
+              <Text style = {styles.signalsInDirectionHeaderText}>Direction: {decodeDirection(currentDirection)}</Text>
+            </View>
+
             {renderHeaderButtons()}
 
             {renderSidebar()}
@@ -1413,8 +1570,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 12,
   },
+  directionPhasesMobileDeck: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
   directionPhaseItemVertical: {
     marginVertical: 12,
     width: deviceWidth * 0.8,
+  },
+
+  directionPhaseItemMobile: {
+    width: deviceWidth - 54,
+    marginRight: 16,
+    marginLeft: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  signalsInDirectionHeader: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+
+  signalsInDirectionHeaderText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 28,
   },
 });

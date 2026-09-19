@@ -17,6 +17,12 @@
 		},
 		{
 			"path": "../../../AIRoadInspectionDashboard"
+		},
+		{
+			"path": "../../../JobScraper"
+		},
+		{
+			"path": "../../../PacketAnalyzer"
 		}
 	],
 	"settings": {},
